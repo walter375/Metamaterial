@@ -21,25 +21,37 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
 """
 Tests the derivative function dU for the 1D rigidbody case
 """
 
 import numpy as np
 from code import rigidbody_1D as rb
+
+
 def test_dU_1D():
+    positions_initial_ic = np.array([0.,1.,2.,3.])
+    positions_pulled_ic = np.array([0.,1.,2.,3.])
+    nb_hinges = len(positions_initial_ic)
+    nb_bodies = len(positions_initial_ic)-1
+    epsilon = 0.01
 
-    dx = 0.001
-    nb_points = 1000
-    x = np.arange(nb_points) * dx
+    k_n = np.ones(nb_bodies)
+    beam_lengths_n = rb.getBeamLength_1D(positions_initial_ic) #shape(nb_hinges -1,)
 
-    y = rb.U_1D(x, np.ones(nb_points-1), np.ones(nb_points-1))
+    u_pulled = rb.U_1D(positions_pulled_ic, beam_lengths_n, k_n)
+    du_pulled = rb.dU_1D(positions_pulled_ic, beam_lengths_n, k_n)  # ((positions_pulled_ic[:-1]+positions_pulled_ic[1:])/2)
 
-    test = ((x[:-1] + x[1:]) / 2)
+    positions_pulled_ic[-2] = positions_pulled_ic[-2]+epsilon
 
-    dy_analytical = rb.dU_1D(test, np.ones(nb_points-1), np.ones(nb_points-1))
-    dy_numerical = np.diff(y) / np.diff(x)
+    u_epsilon = rb.U_1D(positions_pulled_ic, beam_lengths_n, k_n)
+    du_epsilon = rb.dU_1D(positions_pulled_ic, beam_lengths_n, k_n)
 
-    #np.testing.assert_allclose(dy_analytical, dy_numerical)
+    print("\nu_pulled: ", u_pulled, "\nu_epsilon: ", u_epsilon)
+    print("\ndu_pulled: ", du_pulled, "\ndu_epsilon: ", du_epsilon)
 
+    test_numerical = (u_epsilon - u_pulled)/epsilon
+    print("test_numerical: ", test_numerical)
+    test_analytical = (du_epsilon[-2] + du_pulled[-2])/2
+    print("test_analytical: ",test_analytical)
+    np.testing.assert_allclose(test_numerical, test_analytical, atol=1e-15)

@@ -6,24 +6,14 @@ import matplotlib.pyplot as plt
 0 - 1 - 2 - 3
 0 - 1 - 2 ------- 7
 """
-nb_bodies = 3
-nb_hinges = 4
-positions_initial_i = np.array([0, 1, 2, 3])
-positions_final_i = np.array([0, 1, 2, 7])
-# for constraints
-start = positions_initial_i[0]
-end = positions_final_i[-1]
 
-k_n = np.ones(nb_bodies)
-# k_n[2] = 4
-# k_n[0] = 4
-k_n[1] = 4
 
 def U_1D(positions_ic, beam_lengths_n, k_n):
     U = 0.0
-    for i in range(nb_bodies):
+    for i in range(len(k_n)):
         # # last beam
-        if i == (len(positions_ic) - 1):
+        if i == (len(k_n)):
+            print(i, k_n.shape, beam_lengths_n.shape)
             U += 0.5 * k_n[i] * pow((positions_ic[i] - positions_ic[i - 1] - beam_lengths_n[i]), 2)
         # first beam and inbetween beams
         else:
@@ -62,14 +52,26 @@ def con2(positions_ic):
     return positions_ic[-1] - end
 
 if __name__ == "__main__":
+    positions_initial_i = np.array([0, 1, 2, 3, 4, 8])
+    positions_final_i = np.array([0, 1, 2, 3, 4, 8])
+    nb_hinges = len(positions_initial_i)
+    nb_bodies = nb_hinges - 1
 
+    k_n = np.ones(nb_bodies)
+
+    # for constraints
+    start = positions_initial_i[0]
+    end = positions_final_i[-1]
 
     #positions_ic_flat = positions_ic.reshape(nb_hinges*2)
     beam_lengths_n = getBeamLength_1D(positions_initial_i)
-    #print(objective(positions_final_ic, beam_lengths_n, k_n))
+    print("u1: ", U_1D(positions_initial_i, beam_lengths_n, k_n))
+    print("u2: ", U_1D(positions_final_i, beam_lengths_n, k_n))
+    print("du1: ", dU_1D(positions_initial_i, beam_lengths_n, k_n))
+    print("du2: ", dU_1D(positions_final_i, beam_lengths_n, k_n))
     cons = ({'type': 'eq', 'fun': con1},
             {'type': 'eq', 'fun': con2})
-    res = scipy.optimize.minimize(objective, x0=[0,0,0,0],args=(beam_lengths_n, k_n), constraints=cons, jac=dU_1D)
+    res = scipy.optimize.minimize(objective, x0=np.zeros(len(positions_initial_i)),args=(beam_lengths_n, k_n), constraints=cons, jac=dU_1D)
     print(res.message)
     print(res.x)
     print(res.fun)
