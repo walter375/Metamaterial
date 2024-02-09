@@ -54,4 +54,4 @@ def test_dU_1D():
     print("test_numerical: ", test_numerical)
     test_analytical = (du_epsilon[-2] + du_pulled[-2])/2
     print("test_analytical: ",test_analytical)
-    np.testing.assert_allclose(test_numerical, test_analytical, atol=1e-15)
+    np.testing.assert_allclose(test_numerical, test_analytical)
