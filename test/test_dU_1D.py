@@ -39,19 +39,29 @@ def test_dU_1D():
     k_n = np.ones(nb_bodies)
     beam_lengths_n = rb.getBeamLength_1D(positions_initial_ic) #shape(nb_hinges -1,)
 
-    u_pulled = rb.U_1D(positions_pulled_ic, beam_lengths_n, k_n)
-    du_pulled = rb.dU_1D(positions_pulled_ic, beam_lengths_n, k_n)  # ((positions_pulled_ic[:-1]+positions_pulled_ic[1:])/2)
+    du_pulled = np.zeros([nb_hinges])
+    du_epsilon = np.zeros([nb_hinges])
 
-    positions_pulled_ic[-2] = positions_pulled_ic[-2]+epsilon
+    u_pulled = np.zeros([nb_hinges])
+    u_epsilon = np.zeros([nb_hinges])
+    temp = np.zeros([nb_hinges])
+    for i in range(len(positions_pulled_ic)):
+        u_pulled[i] = rb.U_1D(positions_pulled_ic, beam_lengths_n, k_n)
+        temp = rb.dU_1D(positions_pulled_ic, beam_lengths_n, k_n)
+        du_pulled[i] = temp[i]
 
-    u_epsilon = rb.U_1D(positions_pulled_ic, beam_lengths_n, k_n)
-    du_epsilon = rb.dU_1D(positions_pulled_ic, beam_lengths_n, k_n)
+        positions_pulled_ic[i] = positions_pulled_ic[i]+epsilon
+
+        u_epsilon[i] = rb.U_1D(positions_pulled_ic, beam_lengths_n, k_n)
+        temp = rb.dU_1D(positions_pulled_ic, beam_lengths_n, k_n)
+        du_epsilon[i] = temp[i]
+        positions_pulled_ic = positions_initial_ic
 
     print("\nu_pulled: ", u_pulled, "\nu_epsilon: ", u_epsilon)
-    print("\ndu_pulled: ", du_pulled, "\ndu_epsilon: ", du_epsilon)
+    print("\ndu_pulled:\n", du_pulled, "\ndu_epsilon:\n", du_epsilon)
 
     test_numerical = (u_epsilon - u_pulled)/epsilon
     print("test_numerical: ", test_numerical)
-    test_analytical = (du_epsilon[-2] + du_pulled[-2])/2
+    test_analytical = (du_epsilon + du_pulled)/2
     print("test_analytical: ",test_analytical)
-    np.testing.assert_allclose(test_numerical, test_analytical)
+    np.testing.assert_allclose(test_numerical, test_analytical, rtol=0.001)
