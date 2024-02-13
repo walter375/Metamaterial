@@ -29,29 +29,38 @@ def U_2D(positions_ic, beam_lengths_n, k_n, i_n, j_n):
 
 # dU should have for every position a x and y derivative -> dU.shape(positions*2)
 def dU_2D(positions_ic, beam_lengths_n, k_n, i_n, j_n):
-    dU = np.zeros(len(positions_ic))
+    dU = np.zeros([len(positions_ic),2])
+    r_hat = getRHat_2D(positions_ic, beam_lengths_n, i_n, j_n)
     # loop over all beams
     for m in range(len(positions_ic)):
-        # find all beams connected to hinge i
+        # find all beams k connected to hinge m
         for k in range(len(k_n)):
             if (i_n[k] == m):
                 index_j = j_n[k]
                 index_i = i_n[k]
-                dU[m] += k_n[k] * (np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[k])
+                dU[m] += k_n[k] * (np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[k]) * r_hat[k]
             elif(j_n[k] == m):
                 index_j = j_n[k]
                 index_i = i_n[k]
-                dU[m] += k_n[k] * (np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[k])
+                dU[m] += k_n[k] * (np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[k]) * r_hat[k]
             else:
                 continue
     return dU
+
+def getRHat_2D(positions_ic, beam_lengths_n, i_n, j_n):
+    r_hat = np.zeros([len(i_n), 2])
+    for m in range(len(i_n)):
+        index_i = i_n[m]
+        index_j = j_n[m]
+        r_hat[m] = ((positions_ic[index_j] - positions_ic[index_i]) / beam_lengths_n[m])
+    return r_hat
 
 def getBeamLength_2D(positions_ic, i_n, j_n):
     # beamlengths of bodies (_n for bodies)
     # calculate beam_length: sqrt((x_n+1 - x_n)² + (y_n+1 - y_n)²)
     # 1: np.diff(positions_ic, axis=0), 2.np.linalg.norm(position_diff_ic, axis=0)
     beam_lengths_n = np.zeros(len(i_n))
-    for m in range(len(positions_ic)-1):
+    for m in range(len(i_n)):
         index_i = i_n[m]
         index_j = j_n[m]
         beam_lengths_n[m] = np.linalg.norm(positions_ic[index_j] - positions_ic[index_i])
@@ -90,7 +99,7 @@ if __name__ == "__main__":
     print("dU: ", dU_2D(positions_final_ic, beam_lengths_n, k_n, i_n, j_n))
     cons = [{'type': 'eq', 'fun': con1},
             {'type': 'eq', 'fun': con2}]
-    res = scipy.optimize.minimize(objective, x0=np.zeros(nb_hinges*2), args=(beam_lengths_n, k_n), constraints=cons,jac=dU_2D)
+    res = scipy.optimize.minimize(objective, x0=np.zeros(nb_hinges*2), args=(beam_lengths_n, k_n, i_n, j_n), constraints=cons,jac=dU_2D)
     print("msg: ", res.message)
     print("res.x:\n ", res.x.reshape(nb_hinges, 2))
     print("fun:\n ", res.fun)
