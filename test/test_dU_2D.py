@@ -27,10 +27,11 @@ Tests the derivative function dU for the 2D rigidbody case
 """
 
 import numpy as np
+import math
 from code import rigidbody_2D as rb
 def test_dU_2D():
     positions_initial_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
-    positions_final_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [5,2]])
+    positions_final_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1.0001]])
     i_n = np.array([0, 1, 2, 1, 4, 3])
     j_n = np.array([1, 2, 3, 4, 3, 5])
 
@@ -47,15 +48,17 @@ def test_dU_2D():
     u_final = rb.U_2D(positions_final_ic, beam_lengths_n, k_n, i_n, j_n)
 
     du_inital = rb.dU_2D(positions_initial_ic, beam_lengths_n, k_n, i_n, j_n)
+    print("\ndu_pulled\n")
     du_pulled = rb.dU_2D(positions_final_ic, beam_lengths_n, k_n, i_n, j_n)
 
-
     print("\nu_inital: ", u_inital, "\nu_final: ", u_final, "\ndu_inital: ", du_inital, "\ndu_pulled: ", du_pulled)
-    test_numerical = (u_final-u_inital) / np.linalg.norm(positions_final_ic[-1]-positions_initial_ic[-1])
+    epsilon = np.linalg.norm(positions_final_ic[-1]-positions_initial_ic[-1]) - np.linalg.norm(positions_initial_ic[-1]-positions_initial_ic[-1])
+    test_numerical = (u_final-u_inital) / epsilon
+    # print(np.linalg.norm(positions_final_ic[-1]-positions_initial_ic[-1]))
     print("\ntest_num: ", test_numerical)
-    test_analytical = (du_pulled[-1] + du_inital[-1])/np.linalg.norm((positions_initial_ic[-1] + positions_final_ic[-1])/2)
-    print("\ntest_analytical: ", test_analytical)
 
+    test_analytical = np.sum(du_inital[-1] + du_pulled[-1])    # print("\ntest_analytical: ", test_analytical)
+    print("\nanalytical: ", test_analytical)
 
     # print("dy_analytical:", dy_analytical.shape)
     # print("dy_numerical:", dy_numerical.shape)
