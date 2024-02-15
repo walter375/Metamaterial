@@ -68,20 +68,35 @@ def getBeamLength_2D(positions_ic, i_n, j_n):
         beam_lengths_n[m] = np.linalg.norm(positions_ic[index_j] - positions_ic[index_i])
     return beam_lengths_n
 
-def objective(positions_flat_2i, beam_lengths_n, k_n, i_n, j_n):
-    positions_ic = positions_flat_2i.reshape(nb_hinges, 2)
-    #print(positions_ic)
-    return U_2D(positions_ic, beam_lengths_n, k_n, i_n, j_n)
+def objective(positions_flat, beam_lengths_n, k_n, i_n, j_n, con1, con2):
+    positions_ic = positions_flat.reshape(nb_hinges-2, 2)
+    # print(positions_ic.shape, beam_lengths_n.shape, k_n.shape, i_n.shape, j_n.shape)
+    U = 0.0
+    for m in range(len(i_n)):
+        if m == 0:
+            index_j = j_n[m]-1
+            # print("m: ", m, "pos: ", positions_ic[index_j])
+            U += 0.5 * k_n[m] * ((np.linalg.norm(positions_ic[index_j] - con1) - beam_lengths_n[m]) ** 2)
+        elif m == (len(i_n)-1):
+            index_i = i_n[m]-1
+            # print("m: ", m, "pos: ", positions_ic[index_i])
+            U += 0.5 * k_n[m] * ((np.linalg.norm(con2 - positions_ic[index_i]) - beam_lengths_n[m]) ** 2)
+        else:
+            index_i = i_n[m]-1
+            index_j = j_n[m]-1
+            # print("m: ", m, "pos: ", positions_ic[index_i], positions_ic[index_j])
+            U += 0.5 * k_n[m] * ((np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[m]) ** 2)
+    return U
 
 # first position needs to stay zero
-def con1(positions_flat_2i):
-    # print("con1: ", positions_2i[0:2], start)
-    return start - positions_flat_2i[0:2]
-
-# last position needs to stay the same, cannot move
-def con2(positions_flat_2i):
-    # print("\ncon2: ",positions_2i[-2:], end)
-    return positions_flat_2i[-2:] - end
+# def con1(positions_flat_2i):
+#     # print("con1: ", positions_2i[0:2], start)
+#     return start - positions_flat_2i[0:2]
+#
+# # last position needs to stay the same, cannot move
+# def con2(positions_flat_2i):
+#     # print("\ncon2: ",positions_2i[-2:], end)
+#     return positions_flat_2i[-2:] - end
 
 if __name__ == "__main__":
     positions_initial_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
@@ -91,23 +106,31 @@ if __name__ == "__main__":
 
     nb_bodies = len(i_n)
     nb_hinges = len(positions_initial_ic)
-    positions_flat = positions_final_ic.reshape(nb_hinges * 2)
+
+    positions_flat = positions_final_ic[1:-1]
+    positions_flat = positions_flat.reshape((nb_hinges-2) * 2)
     k_n = np.ones(nb_bodies)
-    start = positions_initial_ic[0]
-    end = positions_final_ic[-1]
+
+    con1 = positions_initial_ic[0]
+    con2 = positions_final_ic[-1]
 
     beam_lengths_n = getBeamLength_2D(positions_initial_ic, i_n, j_n)
-    print("obj: ", objective(positions_flat, beam_lengths_n, k_n, i_n, j_n))
-    print("dU: ", dU_2D(positions_final_ic, beam_lengths_n, k_n, i_n, j_n))
-    cons = [{'type': 'eq', 'fun': con1},
-            {'type': 'eq', 'fun': con2}]
-    res = scipy.optimize.minimize(objective, x0=np.zeros(nb_hinges*2), args=(beam_lengths_n, k_n, i_n, j_n), constraints=cons)#,jac=dU_2D)
+    # print("U: ", U_2D(positions_flat, beam_lengths_n, k_n, i_n, j_n))
+    # print("dU: ", dU_2D(positions_final_ic, beam_lengths_n, k_n, i_n, j_n))
+    # cons = [{'type': 'eq', 'fun': con1},
+    #         {'type': 'eq', 'fun': con2}]
+
+    res = scipy.optimize.minimize(objective, x0=positions_flat, args=(beam_lengths_n, k_n, i_n, j_n, con1, con2)) #, constraints=cons)#,jac=dU_2D)
+
     print("msg: ", res.message)
-    print("res.x:\n ", res.x.reshape(nb_hinges, 2))
+    print("res.x:\n ", res.x.reshape(nb_hinges-2, 2))
     print("fun:\n ", res.fun)
 
-    points= res.x.reshape(nb_hinges,2)
-    print(points[:,0], points[:,1])
+    points = res.x
+    points = np.insert(points, 0, con1)
+    points = np.append(points, con2)
+    points = points.reshape(nb_hinges,2)
+    # print(points[:,0], points[:,1])
     plt.plot(positions_initial_ic[:,0], positions_initial_ic[:,1], 'o')
     plt.plot(points[:,0], points[:,1], 'x')
     plt.show()
