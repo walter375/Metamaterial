@@ -53,7 +53,7 @@ def dU(positions_ic, beam_lengths_n, k_n):
 
 def U_objective(args):
 
-    # U_objective(positions_opt_flat, test.getBeamLength(), k_n, positions_ic[0], positions_ic[-1])
+    # U_objective(positions_opt_flat, test.getBeamLength(), k_alpha, positions_ic[0], positions_ic[-1])
     positions_ic, beamlengths_n, k_n = args[0], args[1], args[2]
     return U(positions_ic, beamlengths_n, k_n)
 
@@ -62,15 +62,15 @@ def U_objective(args):
     #     # first beam
     #     if i == 0:
     #         print("case (i==0): ", i)
-    #         U_obj += 0.5 * k_n[i] * pow((positions_opt_flat[i] - boundary_1 - beam_lengths_n[i]), 2)
+    #         U_obj += 0.5 * k_alpha[i] * pow((positions_opt_flat[i] - boundary_1 - beam_lengths_n[i]), 2)
     #     # last beam
     #     elif i == (len(positions_opt_flat) - 1):
     #         print("case (i==len(positions_ic): ", i)
-    #         U_obj += 0.5 * k_n[i] * pow((boundary_2 - positions_opt_flat[i-1]  - beam_lengths_n[i]), 2)
+    #         U_obj += 0.5 * k_alpha[i] * pow((boundary_2 - positions_opt_flat[i-1]  - beam_lengths_n[i]), 2)
     #     # beams inbetween
     #     else:
     #         print("case else: ", i)
-    #         U_obj += 0.5 * k_n[i] * pow((positions_opt_flat[i] - positions_opt_flat[i-1] - beam_lengths_n[i]), 2)
+    #         U_obj += 0.5 * k_alpha[i] * pow((positions_opt_flat[i] - positions_opt_flat[i-1] - beam_lengths_n[i]), 2)
     # return U_obj
 
 
@@ -104,20 +104,6 @@ class Structure:
         beam_lengths_n = np.linalg.norm(np.diff(self.positions_ic, axis=0), axis=1)
         return beam_lengths_n
 
-    # returns an array with all beams that are connected at position_r
-    def neighbors(self, position_r):
-        # Representing neighbor relationships (which beam connects which hinges)
-        i_n = np.array([0, 1, 2, 3, 4, 1, 5, 6])
-        j_n = np.array([1, 2, 3, 4, 7, 5, 6, 4])
-        neighbors = np.zeros((0,2))
-        for i in range(len(i_n)):
-            if i_n == position_r or j_n == position_r:
-                neighbors = np.append([i_n[i], j_n[i]])
-            else:
-                continue
-
-        return neighbors
-
 
 if __name__ == "__main__":
     #test = Structure()
@@ -135,6 +121,6 @@ if __name__ == "__main__":
     print("postion flattened: ", positions_opt_flat, positions_opt_flat.shape)
 #     print(positions_ic[0], positions_ic[-1])
 
-    # U_objective([positions_opt_flat, test.getBeamLength(), k_n])
-    # opt = scipy.optimize.minimize(U_objective(), x0=np.zeros([6]), args=(positions_opt_flat, test.getBeamLength(), k_n))
+    # U_objective([positions_opt_flat, test.getBeamLength(), k_alpha])
+    # opt = scipy.optimize.minimize(U_objective(), x0=np.zeros([6]), args=(positions_opt_flat, test.getBeamLength(), k_alpha))
     # print(opt.message)
