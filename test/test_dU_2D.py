@@ -28,7 +28,7 @@ Tests the derivative function dU for the 2D rigidbody case
 
 import numpy as np
 import math
-from code import rigidbody_2D as rb
+from code import beam_2D as rb
 
 epsilon = 0.001
 positions_initial_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
@@ -50,8 +50,6 @@ def test_dU_2D_xy():
 
     u_epsilon = rb.U_2D(positions_epsilon_ic, beam_lengths_n, k_n, i_n, j_n)
     du_epsilon_half = rb.dU_2D(positions_epsilon_half_ic, beam_lengths_n, k_n, i_n, j_n)
-
-
 
     test_numerical = (u_epsilon-u_pulled)/epsilon
     test_analytical = np.sum(du_epsilon_half[-1])

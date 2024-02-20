@@ -26,7 +26,7 @@ Tests the derivative function dU for the 1D rigidbody case
 """
 
 import numpy as np
-from code import rigidbody_1D as rb
+from code import beam_1D as rb
 
 
 def test_dU_1D():
@@ -57,11 +57,10 @@ def test_dU_1D():
         du_epsilon[i] = temp[i]
         positions_pulled_ic = positions_initial_ic
 
-    print("\nu_pulled: ", u_pulled, "\nu_epsilon: ", u_epsilon)
-    print("\ndu_pulled:\n", du_pulled, "\ndu_epsilon:\n", du_epsilon)
+    # print("\nu_pulled: ", u_pulled, "\nu_epsilon: ", u_epsilon)
+    # print("\ndu_pulled:\n", du_pulled, "\ndu_epsilon:\n", du_epsilon)
 
     test_numerical = (u_epsilon - u_pulled)/epsilon
-    print("test_numerical: ", test_numerical)
     test_analytical = (du_epsilon + du_pulled)/2
-    print("test_analytical: ",test_analytical)
+    # print("test_numerical: ", test_numerical, "test_analytical: ",test_analytical)
     np.testing.assert_allclose(test_numerical, test_analytical, rtol=0.001)
