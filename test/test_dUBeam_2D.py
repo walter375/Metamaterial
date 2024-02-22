@@ -23,7 +23,7 @@
 #
 
 """
-Tests the derivative function dU for the 2D rigidbody case
+Tests the derivative function dUBeam_2D for the 2D rigidbody case
 """
 
 import numpy as np
