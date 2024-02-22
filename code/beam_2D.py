@@ -15,7 +15,7 @@ _/\_    0_1/ \3_5
 """
 calculates the energy U of the overall system
 """
-def U_2D_beam(positions_ic, beam_lengths_n, c_alpha, i_n, j_n):
+def UBeam_2D(positions_ic, beam_lengths_n, c_alpha, i_n, j_n):
     U = 0.0
     for m in range(len(i_n)):
         index_i = i_n[m]
@@ -30,17 +30,19 @@ calculates the energy U of the hinges
 U = 0.5 * c_beta * (cos(theta_ijk) - cos(theta_0))²
 cos(theta_ijk) = (r_ji * r_jk)/(|r_ij| * |r_jk|) 
 """
-def U_2D_angle(angles_0, angles_ijk, c_beta):
+def UAngle_2D(positions_inital_ic, positions_final_ic, c_beta, i_beta, j_beta, k_beta):
     U = 0.0
+    cos_angles_ijk = getCosAngles_2D(positions_final_ic, i_beta, j_beta, k_beta)
+    cos_angles_0 = getCosAngles_2D(positions_inital_ic, i_beta, j_beta, k_beta)
     for m in range(len(c_beta)):
-        U += 0.5 * c_beta[m] * (angles_ijk[m] - angles_0[m])**2
+        U += 0.5 * c_beta[m] * (cos_angles_ijk[m] - cos_angles_0[m])**2
     return U
 
 
 """
 calculates the derivate of the function U for every position
 """
-def dU_2D_beam(positions_ic, beam_lengths_n, c_alpha, i_n, j_n):
+def dUBeam_2D(positions_ic, beam_lengths_n, c_alpha, i_n, j_n):
     dU = np.zeros([len(positions_ic),2])
     r_hat = getRHat_2D(positions_ic, i_n, j_n)
     # loop over all beams
@@ -59,8 +61,18 @@ def dU_2D_beam(positions_ic, beam_lengths_n, c_alpha, i_n, j_n):
                 continue
     return dU
 
-def dU_2D_angle():
-    return 0
+def dUAngle_2D(positions_inital_ic, positions_final_ic, c_beta, i_beta, j_beta, k_beta):
+    dU = np.zeros([len(c_beta)])
+
+    cos_angles_0 = getCosAngles_2D(positions_inital_ic, i_beta, j_beta, k_beta)
+    cos_angles_ijk = getCosAngles_2D(positions_final_ic, i_beta, j_beta, k_beta)
+
+    sin_angles_0 = getSinAngles_2D(positions_inital_ic, i_beta, j_beta, k_beta)
+    sin_angles_ijk =getSinAngles_2D(positions_final_ic, i_beta, j_beta, k_beta)
+
+    for m in range(len(c_beta)):
+        dU[m] = c_beta[m] * (cos_angles_ijk[m] - cos_angles_0[m]) * (sin_angles_ijk[m] + sin_angles_0[m])
+    return dU
 
 """
 returns the normalized vector for every connection of positions
@@ -87,23 +99,38 @@ def getBeamLength_2D(positions_ic, i_alpha, j_alpha):
         beam_lengths_n[m] = np.linalg.norm(positions_ic[index_j] - positions_ic[index_i])
     return beam_lengths_n
 
-def getAngles(positions_ic, i_beta, j_beta, k_beta):
+def getCosAngles_2D(positions_ic, i_beta, j_beta, k_beta):
     angles = np.zeros(len(i_beta), dtype=float)
     for m in range(len(i_beta)):
         index_i = i_beta[m]
         index_j = j_beta[m]
         index_k = k_beta[m]
-        nominator = np.dot((positions_ic[index_i]-positions_ic[index_j]), (positions_ic[index_k]-positions_ic[index_j]))
-        denominator = np.linalg.norm(positions_ic[index_j]-positions_ic[index_i]) * np.linalg.norm(positions_ic[index_j]-positions_ic[index_k])
+        r_ij = positions_ic[index_j] - positions_ic[index_i]
+        r_kj = positions_ic[index_j] - positions_ic[index_k]
+        nominator = np.dot((r_ij), (r_kj))
+        denominator = np.linalg.norm(r_ij) * np.linalg.norm(r_kj)
         # print("nom: ", nominator, "\ndom: ", denominator)
         angles[m] = nominator/denominator
     return angles
 
+def getSinAngles_2D(positions_ic, i_beta, j_beta, k_beta):
+    angles = np.zeros(len(i_beta), dtype=float)
+    for m in range(len(i_beta)):
+        index_i = i_beta[m]
+        index_j = j_beta[m]
+        index_k = k_beta[m]
+        r_ij = positions_ic[index_j] - positions_ic[index_i]
+        r_kj = positions_ic[index_j] - positions_ic[index_k]
+        nominator = np.absolute(np.cross(r_ij, r_kj))
+        denominator = np.linalg.norm(r_ij) * np.linalg.norm(r_kj)
+        # print("nom: ", nominator, "\ndom: ", denominator)
+        angles[m] = nominator/denominator
+    return angles
 """
 objective U function for unsing in the optimizer.
 border constraints are defined by con1 and con2
 """
-def objective_beam_2D(positions_flat, beam_lengths_n, c_alpha, i_alpha, j_alpha, con1, con2):
+def dUBeamObjective_2D(positions_flat, beam_lengths_n, c_alpha, i_alpha, j_alpha, con1, con2):
     positions_ic = positions_flat.reshape(nb_hinges-2, 2)
     U = 0.0
     for m in range(len(i_alpha)):
@@ -156,10 +183,20 @@ if __name__ == "__main__":
     #     plt.plot([points[i][0], points[j][0]], [points[i][1], points[j][1]], 'xk-')
     # plt.show()
 
-    # beam calc
-    angles_0 = getAngles(positions_initial_ic, i_beta, j_beta, k_beta)
-    angles_ijk = getAngles(positions_final_ic, i_beta, j_beta, k_beta)
 
-    print(U_2D_angle(angles_0, angles_ijk, c_beta))
+    # positions_initial_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
+    # positions_final_ic = np.array([[0, 1], [1, 1], [2, 2], [3.5, 1], [2, 0], [5, 1]])
+    # beam calc
+    cos_angles_0 = getCosAngles_2D(positions_initial_ic, i_beta, j_beta, k_beta)
+    cos_angles_ijk = getCosAngles_2D(positions_final_ic, i_beta, j_beta, k_beta)
+
+    sin_angles_0 = getSinAngles_2D(positions_initial_ic, i_beta, j_beta, k_beta)
+    sin_angles_ijk = getSinAngles_2D(positions_final_ic, i_beta, j_beta, k_beta)
+
+    print("\ncos_0: ", cos_angles_0, "\n\ncos_ijk: ", cos_angles_ijk)
+    print("\nsin_0: ", sin_angles_0, "\n\nsin_ijk: ", sin_angles_ijk)
+
+    print("\nU: ", UAngle_2D(positions_initial_ic, positions_final_ic, c_beta, i_beta, j_beta, k_beta))
+    print("\ndU: ", dUAngle_2D(positions_initial_ic, positions_final_ic, c_beta, i_beta, j_beta, k_beta))
 
 
