@@ -10,6 +10,13 @@ _/\_    0_1/ \3_5
         x   4
        0,0
             
+suffix:
+        _i: nb_hinge
+        _n: nb_body
+        _c: cartesian
+        _alpha: beam related
+        _beta: angle related
+
 """
 
 """
@@ -20,14 +27,14 @@ def UBeam_2D(positions_ic, beam_lengths_n, c_alpha, i_n, j_n):
     for m in range(len(i_n)):
         index_i = i_n[m]
         index_j = j_n[m]
-        # print(positions_ic[index_j], positions_ic[index_i])
+        # print("\nm: ", m , "\npos j: ", positions_ic[index_j], "\npos i: ", positions_ic[index_i])
         U += 0.5 * c_alpha[m] * ((np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[m]) ** 2)
     return U
 
 
 """
 calculates the energy U of the hinges
-U = 0.5 * c_beta * (cos(theta_ijk) - cos(theta_0))²
+U = 0.5 * c_beta_i * (cos(theta_ijk) - cos(theta_0))²
 cos(theta_ijk) = (r_ji * r_jk)/(|r_ij| * |r_jk|) 
 """
 def UAngle_2D(positions_inital_ic, positions_final_ic, c_beta, i_beta, j_beta, k_beta):
@@ -42,27 +49,30 @@ def UAngle_2D(positions_inital_ic, positions_final_ic, c_beta, i_beta, j_beta, k
 """
 calculates the derivate of the function U for every position
 """
-def dUBeam_2D(positions_ic, beam_lengths_n, c_alpha, i_n, j_n):
+def dUBeam_2D(positions_ic, beam_lengths_n, c_alpha, i_i, j_i):
     dU = np.zeros([len(positions_ic),2])
-    r_hat = getRHat_2D(positions_ic, i_n, j_n)
+    r_hat = getRHat_2D(positions_ic, i_i, j_i)
     # loop over all beams
     for m in range(len(positions_ic)):
         # find all beams k connected to hinge m
+        # print("\nloop start, m:", m)
         for k in range(len(c_alpha)):
-            if (i_n[k] == m):
-                index_j = j_n[k]
-                index_i = i_n[k]
+            if (i_i[k] == m):
+                index_j = j_i[k]
+                index_i = i_i[k]
+                # print("in if:", k ,"pos j:", positions_ic[index_j],"pos i:", positions_ic[index_i], "beam length:",beam_lengths_n[k])
                 dU[m] += c_alpha[k] * (np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[k]) * r_hat[k]
-            elif(j_n[k] == m):
-                index_j = j_n[k]
-                index_i = i_n[k]
-                dU[m] += c_alpha[k] * (np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[k]) * r_hat[k]
+            elif(j_i[k] == m):
+                index_j = j_i[k]
+                index_i = i_i[k]
+                # print("in elif:", k,"pos j:", positions_ic[index_j],"pos i:", positions_ic[index_i], "beam length:",beam_lengths_n[k])
+                dU[m] -= c_alpha[k] * (np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[k]) * r_hat[k]
             else:
                 continue
     return dU
 
-def dUAngle_2D(positions_inital_ic, positions_final_ic, c_beta, i_beta, j_beta, k_beta):
-    dU = np.zeros([len(c_beta)])
+def dUAngle_2D(positions_inital_ic, positions_final_ic, c_beta_i, i_beta, j_beta, k_beta):
+    dU = np.zeros([len(c_beta_i)])
 
     cos_angles_0 = getCosAngles_2D(positions_inital_ic, i_beta, j_beta, k_beta)
     cos_angles_ijk = getCosAngles_2D(positions_final_ic, i_beta, j_beta, k_beta)
@@ -70,8 +80,8 @@ def dUAngle_2D(positions_inital_ic, positions_final_ic, c_beta, i_beta, j_beta, 
     sin_angles_0 = getSinAngles_2D(positions_inital_ic, i_beta, j_beta, k_beta)
     sin_angles_ijk =getSinAngles_2D(positions_final_ic, i_beta, j_beta, k_beta)
 
-    for m in range(len(c_beta)):
-        dU[m] = c_beta[m] * (cos_angles_ijk[m] - cos_angles_0[m]) * (sin_angles_ijk[m] + sin_angles_0[m])
+    for m in range(len(c_beta_i)):
+        dU[m] = c_beta_i[m] * (cos_angles_ijk[m] - cos_angles_0[m]) * (sin_angles_ijk[m] + sin_angles_0[m])
     return dU
 
 """
@@ -82,7 +92,7 @@ def getRHat_2D(positions_ic, i_alpha, j_alpha):
     for m in range(len(i_alpha)):
         index_i = i_alpha[m]
         index_j = j_alpha[m]
-        r_hat[m] = ((positions_ic[index_j] - positions_ic[index_i]) / np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]))
+        r_hat[m] = ((positions_ic[index_i] - positions_ic[index_j]) / np.linalg.norm(positions_ic[index_i] - positions_ic[index_j]))
     return r_hat
 
 """
