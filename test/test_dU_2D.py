@@ -42,14 +42,14 @@ nb_hinges = len(positions_initial_ic)
 k_n = np.ones(nb_bodies)
 beam_lengths_n = rb.getBeamLength_2D(positions_initial_ic, i_n, j_n)
 
-u_pulled = rb.U_2D_beam(positions_pulled_ic, beam_lengths_n, k_n, i_n, j_n)
-du_pulled = rb.dU_2D_beam(positions_pulled_ic, beam_lengths_n, k_n, i_n, j_n)
+u_pulled = rb.UBeam_2D(positions_pulled_ic, beam_lengths_n, k_n, i_n, j_n)
+du_pulled = rb.dUBeam_2D(positions_pulled_ic, beam_lengths_n, k_n, i_n, j_n)
 def test_dU_2D_xy():
     positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4 + epsilon, 0+epsilon]])
     positions_epsilon_half_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4 + epsilon/2, 0+epsilon/2]])
 
-    u_epsilon = rb.U_2D_beam(positions_epsilon_ic, beam_lengths_n, k_n, i_n, j_n)
-    du_epsilon_half = rb.dU_2D_beam(positions_epsilon_half_ic, beam_lengths_n, k_n, i_n, j_n)
+    u_epsilon = rb.UBeam_2D(positions_epsilon_ic, beam_lengths_n, k_n, i_n, j_n)
+    du_epsilon_half = rb.dUBeam_2D(positions_epsilon_half_ic, beam_lengths_n, k_n, i_n, j_n)
 
     test_numerical = (u_epsilon-u_pulled)/epsilon
     test_analytical = np.sum(du_epsilon_half[-1])
@@ -59,8 +59,8 @@ def test_dU_2D_x():
     positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4 + epsilon, 0]])
     positions_epsilon_half_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4 + epsilon / 2, 0]])
 
-    u_epsilon = rb.U_2D_beam(positions_epsilon_ic, beam_lengths_n, k_n, i_n, j_n)
-    du_epsilon_half = rb.dU_2D_beam(positions_epsilon_half_ic, beam_lengths_n, k_n, i_n, j_n)
+    u_epsilon = rb.UBeam_2D(positions_epsilon_ic, beam_lengths_n, k_n, i_n, j_n)
+    du_epsilon_half = rb.dUBeam_2D(positions_epsilon_half_ic, beam_lengths_n, k_n, i_n, j_n)
 
     test_numerical = (u_epsilon - u_pulled) / epsilon
     test_analytical = du_epsilon_half[-1:, 0]
@@ -70,8 +70,8 @@ def test_dU_2D_y():
     positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0+epsilon]])
     positions_epsilon_half_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0+epsilon/2]])
 
-    u_epsilon = rb.U_2D_beam(positions_epsilon_ic, beam_lengths_n, k_n, i_n, j_n)
-    du_epsilon_half = rb.dU_2D_beam(positions_epsilon_half_ic, beam_lengths_n, k_n, i_n, j_n)
+    u_epsilon = rb.UBeam_2D(positions_epsilon_ic, beam_lengths_n, k_n, i_n, j_n)
+    du_epsilon_half = rb.dUBeam_2D(positions_epsilon_half_ic, beam_lengths_n, k_n, i_n, j_n)
 
     test_numerical = (u_epsilon - u_pulled) / epsilon
     test_analytical = du_epsilon_half[-1:,1]
