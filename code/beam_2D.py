@@ -31,31 +31,32 @@ def UBeam_2D(positions_ic, beam_lengths_n, c_alpha, i_n, j_n):
     return U
 
 """
-calculates the energy U of the hinges
-U = 0.5 * c_beta_i * (cos(theta_ijk) - cos(theta_0))²
-cos(theta_ijk) = (r_ji * r_jk)/(|r_ij| * |r_jk|) 
-"""
-def UAngle_2D(positions_inital_ic, positions_final_ic, c_beta, i_beta, j_beta, k_beta):
-    U = 0.0
-    cos_angles_ijk = getCosAngles_2D(positions_final_ic, i_beta, j_beta, k_beta)
-    cos_angles_0 = getCosAngles_2D(positions_inital_ic, i_beta, j_beta, k_beta)
-    for m in range(len(c_beta)):
-        U += 0.5 * c_beta[m] * (cos_angles_ijk[m] - cos_angles_0[m])**2
-    return U
-
-"""
 calculates the derivative of the function U for every position
 """
 def dUBeam_2D(positions_ic, beam_lengths_n, c_alpha, i_i, j_i):
     dU = np.zeros([len(positions_ic),2])
     r_hat = getRHat_2D(positions_ic, i_i, j_i)
-
     for m in range(len(c_alpha)):
         index_j = j_i[m]
         index_i = i_i[m]
         dU[index_i] += c_alpha[m] * (np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[m]) * r_hat[m]
         dU[index_j] -= c_alpha[m] * (np.linalg.norm(positions_ic[index_j] - positions_ic[index_i]) - beam_lengths_n[m]) * r_hat[m]
     return dU
+
+
+"""
+calculates the energy U of the hinges
+U = 0.5 * c_beta_i * (cos(theta_ijk) - cos(theta_0))²
+cos(theta_ijk) = (r_ji * r_jk)/(|r_ij| * |r_jk|) 
+"""
+def UAngle_2D(positions_initial_ic, positions_final_ic, c_beta, i_beta, j_beta, k_beta):
+    U = 0.0
+    cos_angles_ijk = getCosAngles_2D(positions_final_ic, i_beta, j_beta, k_beta)
+    cos_angles_0 = getCosAngles_2D(positions_initial_ic, i_beta, j_beta, k_beta)
+    for m in range(len(c_beta)):
+        U += 0.5 * c_beta[m] * (cos_angles_ijk[m] - cos_angles_0[m])**2
+    return U
+
 
 def dUAngle_2D(positions_inital_ic, positions_final_ic, c_beta_i, i_beta, j_beta, k_beta):
     dU = np.zeros([len(c_beta_i)])
@@ -65,10 +66,55 @@ def dUAngle_2D(positions_inital_ic, positions_final_ic, c_beta_i, i_beta, j_beta
 
     # loop over all positions
     for m in range(len(positions_inital_ic)):
-        for n in range(len(c_beta_i)):
-            if j_beta[n] == m:
-             dU[m] += c_beta_i[m] * (cos_angles_ijk[m] - cos_angles_0[m])
+        index_i = i_beta[m]
+        index_j = j_beta[m]
+        index_k = k_beta[m]
+        for n in range(len(i_beta)):
+            dU[m] = c_beta_i[m] * (cos_angles_ijk[m] - cos_angles_0[m]) *
     return dU
+
+def UTriplet_2D(positions_inital_ic, positions_final_ic, c_alpha, i_gamma, j_gamma, k_gamma):
+    U = 0.0
+    for m in range(len(i_gamma)):
+        index_i = i_gamma[m]
+        index_j = j_gamma[m]
+        index_k = k_gamma[m]
+
+        beamlengths_ij_0 = getBeamLength_2D(positions_inital_ic, i_gamma, j_gamma)
+        beamlengths_jk_0 = getBeamLength_2D(positions_inital_ic, j_gamma, k_gamma)
+        beamlengths_ki_0 = getBeamLength_2D(positions_inital_ic, k_gamma, i_gamma)
+
+        # compute the energy of every beam in the triplet
+        V_ij = 0.5 * c_alpha[m] * ((np.linalg.norm(positions_final_ic[index_j] - positions_final_ic[index_i]) - beamlengths_ij_0[m]) ** 2)
+        V_jk = 0.5 * c_alpha[m] * ((np.linalg.norm(positions_final_ic[index_k] - positions_final_ic[index_j]) - beamlengths_jk_0[m]) ** 2)
+        V_ki = 0.5 * c_alpha[m] * ((np.linalg.norm(positions_final_ic[index_i] - positions_final_ic[index_k]) - beamlengths_ki_0[m]) ** 2)
+        # add all beam energies up to overall triplet energy and sum all triplet energies
+        U += V_ij + V_jk + V_ki
+    return U
+
+
+def dUTriplet_2D(positions_inital_ic, positions_final_ic, c_alpha, i_gamma, j_gamma, k_gamma):
+    dU = np.zeros([len(positions_inital_ic), 2])
+    for m in range(len(i_gamma)):
+        index_i = i_gamma[m]
+        index_j = j_gamma[m]
+        index_k = k_gamma[m]
+
+        beamlengths_ij_0 = getBeamLength_2D(positions_inital_ic, i_gamma, j_gamma)
+        beamlengths_jk_0 = getBeamLength_2D(positions_inital_ic, j_gamma, k_gamma)
+        beamlengths_ki_0 = getBeamLength_2D(positions_inital_ic, k_gamma, i_gamma)
+
+        r_hat_ij = getRHat_2D(positions_final_ic, i_gamma, j_gamma)
+        r_hat_jk = getRHat_2D(positions_final_ic, j_gamma, k_gamma)
+        r_hat_ki = getRHat_2D(positions_final_ic, k_gamma, i_gamma)
+
+        dV_ij = 0.5 * c_alpha[m] * ((np.linalg.norm(positions_final_ic[index_j] - positions_final_ic[index_i]) - beamlengths_ij_0[m]) ** 2) * r_hat_ij[m]
+        dV_jk = 0.5 * c_alpha[m] * ((np.linalg.norm(positions_final_ic[index_k] - positions_final_ic[index_j]) - beamlengths_jk_0[m]) ** 2) * r_hat_jk[m]
+        dV_ki = 0.5 * c_alpha[m] * ((np.linalg.norm(positions_final_ic[index_i] - positions_final_ic[index_k]) - beamlengths_ki_0[m]) ** 2) * r_hat_ki[m]
+        dU[m] = dV_ij + dV_jk + dV_ki
+
+    return dU
+
 
 """
 returns the normalized vector for every connection of positions
