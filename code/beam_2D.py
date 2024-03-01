@@ -33,7 +33,7 @@ def dUBeam_2D(r_ic, beamlengths_p, c_p, i_p, j_p):
 
     dU_i = nt.mabincount(i_p, (c_p * (rij_p - beamlengths_p) * rhat_pc.T).T, len(r_ic), axis=0)
     dU_j = nt.mabincount(j_p, (c_p * (rij_p - beamlengths_p) * rhat_pc.T).T, len(r_ic), axis=0)
-    dU_test = dU_i - dU_j
+    dU = dU_i - dU_j
     return dU
 
 
@@ -44,10 +44,10 @@ cos(theta_ijk) = (r_ji * r_jk)/(|r_ij| * |r_jk|)
 """
 def UAngle_2D(positions_initial_ic, positions_final_ic, c_t, i_t, j_t, k_t):
     U = 0.0
-    cos_angles_ijk = getCosAngles_2D(positions_final_ic, i_t, j_t, k_t)
-    cos_angles_0 = getCosAngles_2D(positions_initial_ic, i_t, j_t, k_t)
-    for m in range(len(c_t)):
-        U += 0.5 * c_t[m] * (cos_angles_ijk[m] - cos_angles_0[m])**2
+    cosijk_t = getCosAngles_2D(positions_final_ic, i_t, j_t, k_t)
+    cos0_t = getCosAngles_2D(positions_initial_ic, i_t, j_t, k_t)
+
+    U =np.sum(0.5 * c_t * (cosijk_t - cos0_t)**2)
     return U
 
 
@@ -112,9 +112,8 @@ def dUTriplet_2D(positions_inital_ic, positions_final_ic, c_p, i_gamma, j_gamma,
 returns an array containing the beamlength of every beam, index is the number of the beam
 """
 def getBeamLength_2D(r_ic, i_p, j_p):
-    # beamlengths of bodies (_n for bodies)
-    # calculate beam_length: sqrt((x_n+1 - x_n)² + (y_n+1 - y_n)²)
-    # 1: np.diff(r_ic, axis=0), 2.np.linalg.norm(position_diff_ic, axis=0)
+    #beamlengths_p = np.linalg.norm(r_ic[i_p]-r_ic[j_p], axis=1)
+    #print("\nbeamlengths:\n",beamlengths_p)
     beamlengths_p = np.zeros(len(i_p))
     for m in range(len(i_p)):
         index_i = i_p[m]
