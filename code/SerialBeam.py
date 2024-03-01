@@ -53,24 +53,24 @@ def dU(positions_ic, beam_lengths_n, k_n):
 
 def U_objective(args):
 
-    # U_objective(positions_opt_flat, test.getBeamLength(), c_alpha, positions_ic[0], positions_ic[-1])
+    # U_objective(positions_opt_flat, test.getBeamLength(), c_p, positions_ic[0], positions_ic[-1])
     positions_ic, beamlengths_n, k_n = args[0], args[1], args[2]
     return U(positions_ic, beamlengths_n, k_n)
 
-    # for i in range(len(beam_lengths_n)):
+    # for i in range(len(beamlengths_p)):
     #     U_obj = 0
     #     # first beam
     #     if i == 0:
     #         print("case (i==0): ", i)
-    #         U_obj += 0.5 * c_alpha[i] * pow((positions_opt_flat[i] - boundary_1 - beam_lengths_n[i]), 2)
+    #         U_obj += 0.5 * c_p[i] * pow((positions_opt_flat[i] - boundary_1 - beamlengths_p[i]), 2)
     #     # last beam
     #     elif i == (len(positions_opt_flat) - 1):
     #         print("case (i==len(positions_ic): ", i)
-    #         U_obj += 0.5 * c_alpha[i] * pow((boundary_2 - positions_opt_flat[i-1]  - beam_lengths_n[i]), 2)
+    #         U_obj += 0.5 * c_p[i] * pow((boundary_2 - positions_opt_flat[i-1]  - beamlengths_p[i]), 2)
     #     # beams inbetween
     #     else:
     #         print("case else: ", i)
-    #         U_obj += 0.5 * c_alpha[i] * pow((positions_opt_flat[i] - positions_opt_flat[i-1] - beam_lengths_n[i]), 2)
+    #         U_obj += 0.5 * c_p[i] * pow((positions_opt_flat[i] - positions_opt_flat[i-1] - beamlengths_p[i]), 2)
     # return U_obj
 
 
@@ -121,6 +121,6 @@ if __name__ == "__main__":
     print("postion flattened: ", positions_opt_flat, positions_opt_flat.shape)
 #     print(positions_ic[0], positions_ic[-1])
 
-    # U_objective([positions_opt_flat, test.getBeamLength(), c_alpha])
-    # opt = scipy.optimize.minimize(U_objective(), x0=np.zeros([6]), args=(positions_opt_flat, test.getBeamLength(), c_alpha))
+    # U_objective([positions_opt_flat, test.getBeamLength(), c_p])
+    # opt = scipy.optimize.minimize(U_objective(), x0=np.zeros([6]), args=(positions_opt_flat, test.getBeamLength(), c_p))
     # print(opt.message)

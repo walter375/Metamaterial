@@ -43,7 +43,7 @@ k_n = np.ones(nb_bodies)
 beam_lengths_n = rb.getBeamLength_2D(positions_initial_ic, i_n, j_n)
 
 u_pulled = rb.UBeam_2D(positions_pulled_ic, beam_lengths_n, k_n, i_n, j_n)
-#du_pulled = rb.dUBeam_2D(positions_pulled_ic, beam_lengths_n, k_n, i_i, j_i)
+#du_pulled = rb.dUBeam_2D(positions_pulled_ic, beamlengths_p, k_n, i_i, j_i)
 def test_dU_2D_xy():
     positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4,0]], dtype=float)
     positions_epsilon_half_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4,0]], dtype=float)
