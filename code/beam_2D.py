@@ -61,7 +61,7 @@ def UAngle_2D(cosijk_t, cos0_t, c_t):
 """
 
 
-def dUAngle_2D(r_ic, cosijk_t, cos0_t, c_t, i_t, j_t, k_t):
+def dUAngle_2D(r_ic, cosijk_t, cos0_t, cAngle_t, i_t, j_t, k_t):
     # cos0 = getCosAngles_2D(positions_inital_ic, i_t, j_t, k_t)
     # cosijk = getCosAngles_2D(positions_final_ic, i_t, j_t, k_t)
 
@@ -75,28 +75,28 @@ def dUAngle_2D(r_ic, cosijk_t, cos0_t, c_t, i_t, j_t, k_t):
     rik_t = np.linalg.norm(rik_tc, axis=1)
     rikHat_tc = (rik_tc.T / rik_t).T
 
-    print("\nshape: ", (((c_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc)).shape)
+    # print("\nshape: ", (((c_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc)).shape)
     dUkj_ic = nt.mabincount(i_t,
-                            ((c_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc),
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc),
                             len(i_t),
                             axis=0)
     dUij_ic = nt.mabincount(k_t,
-                            ((c_t * (cosijk_t - cos0_t) * (rijHat_tc - (cosijk_t * rkjHat_tc.T).T).T).T / rkj_tc),
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rijHat_tc - (cosijk_t * rkjHat_tc.T).T).T).T / rkj_tc),
                             len(i_t),
                             axis=0)
     dUik_ic = nt.mabincount(j_t,
-                            ((c_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc),
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc),
                             len(i_t),
                             axis=0)
     dUki_ic = nt.mabincount(j_t,
-                            ((c_t * (cosijk_t - cos0_t) * (rijHat_tc - (cosijk_t * rkjHat_tc.T).T).T).T / rkj_tc),
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rijHat_tc - (cosijk_t * rkjHat_tc.T).T).T).T / rkj_tc),
                             len(i_t),
                             axis=0)
 
     dU = dUkj_ic + dUij_ic - dUik_ic - dUki_ic
     return dU
 
-def UTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t, i_t, j_t, k_t):
+def UTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBeam_t, i_t, j_t, k_t):
 
     rij_tc = r_ic[i_t] - r_ic[j_t]
     rij_t = np.linalg.norm(rij_tc, axis=1)
@@ -108,15 +108,15 @@ def UTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t,
     rik_t = np.linalg.norm(rik_tc, axis=1)
 
     # compute the energy of every beam in the triplet
-    V_ij = 0.5 * c_t * ((rij_t - beamlengths0ij_t) ** 2)
-    V_jk = 0.5 * c_t * ((rkj_t - beamlengths0kj_t) ** 2)
-    V_ki = 0.5 * c_t * ((rik_t - beamlengths0ik_t) ** 2)
+    V_ij = 0.5 * cBeam_t * ((rij_t - beamlengths0ij_t) ** 2)
+    V_jk = 0.5 * cBeam_t * ((rkj_t - beamlengths0kj_t) ** 2)
+    V_ki = 0.5 * cBeam_t * ((rik_t - beamlengths0ik_t) ** 2)
     # add all beam energies up to overall triplet energy and sum all triplet energies
     U = V_ij + V_jk + V_ki
     return U
 
 
-def dUTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBeam_t, i_t, j_t, k_t):
+def dUTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBeam_3t, i_t, j_t, k_t):
 
     rij_tc = r_ic[i_t] - r_ic[j_t]
     rij_t = np.linalg.norm(rij_tc, axis=1)
@@ -130,9 +130,13 @@ def dUTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBe
     rik_t = np.linalg.norm(rik_tc, axis=1)
     rikHat_tc = rik_tc / rik_t
 
-    dVij_tc = nt.mabincount(i_t, (0.5 * cBeam_t * ((rij_t - beamlengths0ij_t) ** 2) * rijHat_tc), len(r_ic), axis=1)
-    dVjk_tc = nt.mabincount(j_t, (0.5 * cBeam_t * ((rkj_t - beamlengths0kj_t) ** 2) * rkjHat_tc), len(r_ic), axis=1)
-    dVki_tc = nt.mabincount(k_t, (0.5 * cBeam_t * ((rik_t - beamlengths0ik_t) ** 2) * rikHat_tc), len(r_ic), axis=1)
+    cij_t = cBeam_3t[:,0]
+    ckj_t = cBeam_3t[:,1]
+    cik_t = cBeam_3t[:,2]
+
+    dVij_tc = nt.mabincount(i_t, (0.5 * cij_t * ((rij_t - beamlengths0ij_t) ** 2) * rijHat_tc), len(r_ic), axis=1)
+    dVjk_tc = nt.mabincount(j_t, (0.5 * ckj_t * ((rkj_t - beamlengths0kj_t) ** 2) * rkjHat_tc), len(r_ic), axis=1)
+    dVki_tc = nt.mabincount(k_t, (0.5 * cik_t * ((rik_t - beamlengths0ik_t) ** 2) * rikHat_tc), len(r_ic), axis=1)
 
     dU = dVij_tc + dVjk_tc + dVki_tc
 
