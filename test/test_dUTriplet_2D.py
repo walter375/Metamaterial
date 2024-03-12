@@ -20,21 +20,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-#
+
 
 """
-Tests the derivative function dUAngle_2D for the 2D rigidbody case
-
-   1 ___ 2
- /  \   /
-0 ___ 3
-
+Tests the derivative function dUTriplet_2D for the 2D rigidbody case
 """
-import math
 
 import numpy as np
+import math
 from code import beam_2D as rb
-
 positions_initial_ic = np.array([[0, 0], [1, 0], [1,1]], dtype=float)  # shape=(nb_hinges, 2)
 positions_pulled_ic = np.array([[0, 0], [1, 0], [1.5,1]], dtype=float)
 
@@ -56,40 +50,22 @@ nb_bodies = len(i_p)
 nb_hinges = len(positions_initial_ic)
 beam_lengths_n = rb.getBeamLength_2D(positions_initial_ic, i_p, j_p)
 
-c_t = np.ones(len(i_t))
+c_t3 = np.ones((len(i_t), 3))
 
-cos0_t = rb.getCosAngles_2D(positions_initial_ic, i_t, j_t, k_t)
-cosPulled_t = rb.getCosAngles_2D(positions_pulled_ic, i_t, j_t, k_t)
+beamlengths0ij_t = rb.getBeamLength_2D(positions_initial_ic, i_t, j_t)
+beamlengths0kj_t = rb.getBeamLength_2D(positions_initial_ic, k_t, j_t)
+beamlengths0ik_t = rb.getBeamLength_2D(positions_initial_ic, i_t, k_t)
 
-u_pulled = rb.UAngle_2D(cosPulled_t, cos0_t, c_t)
-#du_pulled = rb.dUBeam_2D(positions_pulled_ic, beamlengths_p, k_n, i_i, j_i)
+u_pulled = rb.UTriplet_2D(positions_pulled_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
 def test_dU_2D_xy():
     epsilon = 0.1
-    positions_epsilon_ic = np.array([[0, 0], [1, 0], [1.5,1+epsilon]], dtype=float)
-    positions_epsilon_half_ic = np.array([[0, 0], [1, 0], [1.5,1+epsilon/2]], dtype=float)
+    positions_epsilon_ic = np.array([[0, 0], [1, 0], [1.5+epsilon, 1]], dtype=float)
+    positions_epsilon_half_ic = np.array([[0, 0], [1, 0], [1.5+epsilon/2, 1]], dtype=float)
 
-    cosEpsilon_t = rb.getCosAngles_2D(positions_epsilon_ic, i_t, j_t, k_t)
-    cosEpsilonHalf_t = rb.getCosAngles_2D(positions_epsilon_half_ic, i_t, j_t, k_t)
+    u_epsilon = rb.UTriplet_2D(positions_epsilon_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
+    du_epsilon_half = rb.dUTriplet_2D(positions_epsilon_half_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
 
-    u_epsilon = rb.UAngle_2D(cosEpsilon_t, cos0_t, c_t)
-    du_epsilon_half = rb.dUAngle_2D(positions_epsilon_half_ic, cosEpsilonHalf_t, cos0_t, c_t, i_t, j_t, k_t)
-
-    # u_epsilon = np.zeros(len(i_t))
-    # du_epsilon_half = np.zeros(len(i_t))
-    #
-    # for i in range(len(i_t)):
-    #     positions_epsilon_ic[i] = positions_epsilon_ic[i] + epsilon
-    #     positions_epsilon_half_ic[i] = positions_epsilon_half_ic[i] + epsilon/2
-    #     u_epsilon[i] = rb.UAngle_2D(positions_initial_ic, positions_epsilon_ic, c_t, i_t, j_t, k_t)
-    #     temp = rb.dUAngle_2D(positions_initial_ic, positions_epsilon_half_ic, c_t, i_t, j_t, k_t)
-    #     du_epsilon_half[i] = temp[i]
-    #     positions_epsilon_ic[i] = positions_pulled_ic[i]
-    #     positions_epsilon_half_ic[i] = positions_pulled_ic[i]
-
-    print("\nu_epsilon: ", u_epsilon, "\nu_pulled: ", u_pulled)
-    print("\ndu_epsilon_half:\n", du_epsilon_half)
-    test_numerical = (u_epsilon-u_pulled)/epsilon
+    test_numerical = (u_epsilon-u_pulled)
     test_analytical = du_epsilon_half
-    print("\ntest_analytical: ", test_analytical, "\ntest_numerical: ", test_numerical)
+    print("\ntest_analytical:\n", test_analytical, "\ntest_numerical:\n", test_numerical)
     # np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-6, atol=1e-5)
-

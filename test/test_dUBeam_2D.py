@@ -86,11 +86,11 @@ def test_dU_2D_x():
     np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-6, atol=1e-5)
 
 def test_dU_2D_y():
-    positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]])
-    positions_epsilon_half_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]])
+    positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]], dtype=float)
+    positions_epsilon_half_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]], dtype=float)
 
-    u_epsilon = np.zeros(nb_hinges)
-    du_epsilon_half = np.zeros([nb_hinges,2])
+    u_epsilon = np.zeros(nb_hinges, dtype=float)
+    du_epsilon_half = np.zeros([nb_hinges,2], dtype=float)
 
     for i in range(len(positions_epsilon_ic)):
         positions_epsilon_ic[i,1] = positions_epsilon_ic[i,1] + epsilon
@@ -102,6 +102,6 @@ def test_dU_2D_y():
         positions_epsilon_half_ic[i] = positions_pulled_ic[i]
 
     test_numerical = (u_epsilon-u_pulled)/epsilon
-    test_analytical = np.sum(du_epsilon_half, axis=1)
+    test_analytical = du_epsilon_half[:,1]
     # print("\ntest_analytical: ", test_analytical, "\ntest_numerical: ", test_numerical)
     np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-6, atol=1e-5)

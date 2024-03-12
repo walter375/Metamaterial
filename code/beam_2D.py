@@ -2,7 +2,6 @@ import numpy as np
 from matscipy import numpy_tricks as nt
 import scipy.optimize
 import matplotlib.pyplot as plt
-
 """  
 suffix:
         _i: position length
@@ -34,7 +33,6 @@ def dUBeam_2D(r_ic, beamlengths_p, c_p, i_p, j_p):
     dU = dU_i - dU_j
     return dU
 
-
 """
 calculates the energy U of the hinges
 U = 0.5 * c_beta_i * (cos(theta_ijk) - cos(theta_0))²
@@ -60,11 +58,7 @@ def UAngle_2D(cosijk_t, cos0_t, c_t):
             axis=0)
 """
 
-
 def dUAngle_2D(r_ic, cosijk_t, cos0_t, cAngle_t, i_t, j_t, k_t):
-    # cos0 = getCosAngles_2D(positions_inital_ic, i_t, j_t, k_t)
-    # cosijk = getCosAngles_2D(positions_final_ic, i_t, j_t, k_t)
-
     rij_tc = r_ic[i_t] - r_ic[j_t]
     rij_t = np.linalg.norm(rij_tc, axis=1)
     rijHat_tc = (rij_tc.T / rij_t).T
@@ -75,29 +69,30 @@ def dUAngle_2D(r_ic, cosijk_t, cos0_t, cAngle_t, i_t, j_t, k_t):
     rik_t = np.linalg.norm(rik_tc, axis=1)
     rikHat_tc = (rik_tc.T / rik_t).T
 
-    # print("\nshape: ", (((c_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc)).shape)
+    # print("\ni:", i_t.shape)
+    # print("\nshape: ", ((c_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T) / rij_t).shape)
+
     dUkj_ic = nt.mabincount(i_t,
-                            ((cAngle_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc),
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T) / rij_t).T,
                             len(i_t),
                             axis=0)
     dUij_ic = nt.mabincount(k_t,
-                            ((cAngle_t * (cosijk_t - cos0_t) * (rijHat_tc - (cosijk_t * rkjHat_tc.T).T).T).T / rkj_tc),
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rijHat_tc - (cosijk_t * rkjHat_tc.T).T).T) / rkj_t).T,
                             len(i_t),
                             axis=0)
     dUik_ic = nt.mabincount(j_t,
-                            ((cAngle_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc),
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T) / rij_t).T,
                             len(i_t),
                             axis=0)
     dUki_ic = nt.mabincount(j_t,
-                            ((cAngle_t * (cosijk_t - cos0_t) * (rijHat_tc - (cosijk_t * rkjHat_tc.T).T).T).T / rkj_tc),
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rijHat_tc - (cosijk_t * rkjHat_tc.T).T).T) / rkj_t).T,
                             len(i_t),
                             axis=0)
-
+    #print("\ndukj:\n", dUkj_ic, "\nduij:\n", dUij_ic, "\nduki:\n", dUki_ic)
     dU = dUkj_ic + dUij_ic - dUik_ic - dUki_ic
     return dU
 
-def UTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBeam_t, i_t, j_t, k_t):
-
+def UTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBeam_t3, i_t, j_t, k_t):
     rij_tc = r_ic[i_t] - r_ic[j_t]
     rij_t = np.linalg.norm(rij_tc, axis=1)
 
@@ -107,39 +102,46 @@ def UTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBea
     rik_tc = r_ic[i_t] - r_ic[k_t]
     rik_t = np.linalg.norm(rik_tc, axis=1)
 
+    cij_t = cBeam_t3[:, 0]
+    ckj_t = cBeam_t3[:, 1]
+    cik_t = cBeam_t3[:, 2]
+
     # compute the energy of every beam in the triplet
-    V_ij = 0.5 * cBeam_t * ((rij_t - beamlengths0ij_t) ** 2)
-    V_jk = 0.5 * cBeam_t * ((rkj_t - beamlengths0kj_t) ** 2)
-    V_ki = 0.5 * cBeam_t * ((rik_t - beamlengths0ik_t) ** 2)
+    V_ij = 0.5 * cij_t * ((rij_t - beamlengths0ij_t) ** 2)
+    V_kj = 0.5 * ckj_t * ((rkj_t - beamlengths0kj_t) ** 2)
+    V_ki = 0.5 * cik_t * ((rik_t - beamlengths0ik_t) ** 2)
     # add all beam energies up to overall triplet energy and sum all triplet energies
-    U = V_ij + V_jk + V_ki
+    U = np.sum(V_ij + V_kj + V_ki)
     return U
 
 
-def dUTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBeam_3t, i_t, j_t, k_t):
-
+def dUTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBeam_t3, i_t, j_t, k_t):
     rij_tc = r_ic[i_t] - r_ic[j_t]
     rij_t = np.linalg.norm(rij_tc, axis=1)
-    rijHat_tc = rij_tc / rij_t
+    rijHat_tc = (rij_tc.T / rij_t).T
 
     rkj_tc = r_ic[k_t] - r_ic[j_t]
     rkj_t = np.linalg.norm(rkj_tc, axis=1)
-    rkjHat_tc = rkj_tc / rkj_t
+    rkjHat_tc = (rkj_tc.T / rkj_t).T
 
     rik_tc = r_ic[i_t] - r_ic[k_t]
     rik_t = np.linalg.norm(rik_tc, axis=1)
-    rikHat_tc = rik_tc / rik_t
+    rikHat_tc = (rik_tc.T / rik_t).T
 
-    cij_t = cBeam_3t[:,0]
-    ckj_t = cBeam_3t[:,1]
-    cik_t = cBeam_3t[:,2]
+    cij_t = cBeam_t3[:, 0]
+    ckj_t = cBeam_t3[:, 1]
+    cik_t = cBeam_t3[:, 2]
 
-    dVij_tc = nt.mabincount(i_t, (0.5 * cij_t * ((rij_t - beamlengths0ij_t) ** 2) * rijHat_tc), len(r_ic), axis=1)
-    dVjk_tc = nt.mabincount(j_t, (0.5 * ckj_t * ((rkj_t - beamlengths0kj_t) ** 2) * rkjHat_tc), len(r_ic), axis=1)
-    dVki_tc = nt.mabincount(k_t, (0.5 * cik_t * ((rik_t - beamlengths0ik_t) ** 2) * rikHat_tc), len(r_ic), axis=1)
+    # print((0.5 * cij_t * (((rij_t - beamlengths0ij_t) ** 2) * rijHat_tc.T)).T.shape)
 
-    dU = dVij_tc + dVjk_tc + dVki_tc
-
+    dVij_tc = nt.mabincount(i_t, (0.5 * cij_t * ((rij_t - beamlengths0ij_t)) * rijHat_tc.T).T, len(r_ic), axis=0)
+    # print("\ndVij_tc:\n", dVij_tc)
+    dVkj_tc = nt.mabincount(j_t, (0.5 * ckj_t * ((rkj_t - beamlengths0kj_t)) * rkjHat_tc.T).T, len(r_ic), axis=0)
+    # print("\ndVkj_tc:\n", dVkj_tc)
+    dVki_tc = nt.mabincount(k_t, (0.5 * cik_t * ((rik_t - beamlengths0ik_t)) * rikHat_tc.T).T, len(r_ic), axis=0)
+    # print("\ndVki_tc:\n", dVki_tc)
+    dU = dVij_tc - dVkj_tc - dVki_tc
+    # print("\ndU:\n", dU)
     return dU
 
 """
@@ -248,7 +250,6 @@ if __name__ == "__main__":
     #     plt.plot([positions_initial_ic[i][0], positions_initial_ic[j][0]], [positions_initial_ic[i][1], positions_initial_ic[j][1]], 'ob--')
     #     plt.plot([points[i][0], points[j][0]], [points[i][1], points[j][1]], 'xk-')
     # plt.show()
-
 
     positions_initial_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
     positions_final_ic = np.array([[0, 1], [1, 1], [2, 2], [3.5, 1], [2, 0], [5, 1]])
