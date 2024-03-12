@@ -16,7 +16,6 @@ suffix:
 calculates the energy U of the overall system
 """
 def UBeam_2D(r_ic, beamlengths_p, c_p, i_p, j_p):
-    U = 0.0
     rij_pc = r_ic[j_p] - r_ic[i_p]  # vector rij
     rij_p = np.linalg.norm(rij_pc, axis=1)  # length of vector rij
     U= np.sum(0.5 * c_p * (rij_p - beamlengths_p) ** 2)
@@ -26,14 +25,13 @@ def UBeam_2D(r_ic, beamlengths_p, c_p, i_p, j_p):
 calculates the derivative of the function U for every position
 """
 def dUBeam_2D(r_ic, beamlengths_p, c_p, i_p, j_p):
-    dU = np.zeros([len(r_ic),2])
     rij_pc = r_ic[i_p] - r_ic[j_p]
     rij_p = np.linalg.norm(rij_pc, axis=1)
-    rhat_pc = (rij_pc.T/ rij_p).T
+    rijHat_pc = (rij_pc.T/ rij_p).T
 
-    dU_i = nt.mabincount(i_p, (c_p * (rij_p - beamlengths_p) * rhat_pc.T).T, len(r_ic), axis=0)
-    dU_j = nt.mabincount(j_p, (c_p * (rij_p - beamlengths_p) * rhat_pc.T).T, len(r_ic), axis=0)
-    dU_test = dU_i - dU_j
+    dU_i = nt.mabincount(i_p, (c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, len(r_ic), axis=0)
+    dU_j = nt.mabincount(j_p, (c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, len(r_ic), axis=0)
+    dU = dU_i - dU_j
     return dU
 
 
@@ -42,69 +40,105 @@ calculates the energy U of the hinges
 U = 0.5 * c_beta_i * (cos(theta_ijk) - cos(theta_0))²
 cos(theta_ijk) = (r_ji * r_jk)/(|r_ij| * |r_jk|) 
 """
-def UAngle_2D(positions_initial_ic, positions_final_ic, c_t, i_t, j_t, k_t):
-    U = 0.0
-    cos_angles_ijk = getCosAngles_2D(positions_final_ic, i_t, j_t, k_t)
-    cos_angles_0 = getCosAngles_2D(positions_initial_ic, i_t, j_t, k_t)
-    for m in range(len(c_t)):
-        U += 0.5 * c_t[m] * (cos_angles_ijk[m] - cos_angles_0[m])**2
+def UAngle_2D(cosijk_t, cos0_t, c_t):
+    U =np.sum(0.5 * c_t * (cosijk_t - cos0_t)**2)
     return U
 
+"""
+    def dUAngle_2D(positions_inital_ic, r_ic, c_t, i_t, j_t, k_t):
+        cos_angles0_t = getCosAngles_2D(positions_inital_ic, i_t, j_t, k_t)
+        cos_angles_t = getCosAngles_2D(r_ic, i_t, j_t, k_t)
+    
+        # Compute derivatives
+        rij_tc = r_ic[j_t] - r_ic[i_t]
+        rkj_tc = r_ic[j_t] - r_ic[k_t]
+        rij_t = np.linalg.norm(rij_tc, axis=1)
+        dU_ic = mabincount(
+            i_t,
+            (c_t * (cos_angles_t - cos_angles0_t) * (rkj_tc - cos_angles_t * rij_tc).T / rij_t).T,
+            len(r_ic),
+            axis=0)
+"""
 
-def dUAngle_2D(positions_inital_ic, positions_final_ic, c_beta_i, i_t, j_t, k_t):
-    dU = np.zeros([len(c_beta_i)])
 
-    cos_angles_0 = getCosAngles_2D(positions_inital_ic, i_t, j_t, k_t)
-    cos_angles_ijk = getCosAngles_2D(positions_final_ic, i_t, j_t, k_t)
+def dUAngle_2D(r_ic, cosijk_t, cos0_t, cAngle_t, i_t, j_t, k_t):
+    # cos0 = getCosAngles_2D(positions_inital_ic, i_t, j_t, k_t)
+    # cosijk = getCosAngles_2D(positions_final_ic, i_t, j_t, k_t)
 
-    # loop over all positions
-    for m in range(len(positions_inital_ic)):
-        index_i = i_t[m]
-        index_j = j_t[m]
-        index_k = k_t[m]
-        for n in range(len(i_t)):
-            dU[m] = c_beta_i[m] * (cos_angles_ijk[m] - cos_angles_0[m])
+    rij_tc = r_ic[i_t] - r_ic[j_t]
+    rij_t = np.linalg.norm(rij_tc, axis=1)
+    rijHat_tc = (rij_tc.T / rij_t).T
+    rkj_tc = r_ic[k_t] - r_ic[j_t]
+    rkj_t = np.linalg.norm(rkj_tc, axis=1)
+    rkjHat_tc = (rkj_tc.T / rkj_t).T
+    rik_tc = r_ic[i_t] - r_ic[k_t]
+    rik_t = np.linalg.norm(rik_tc, axis=1)
+    rikHat_tc = (rik_tc.T / rik_t).T
+
+    # print("\nshape: ", (((c_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc)).shape)
+    dUkj_ic = nt.mabincount(i_t,
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc),
+                            len(i_t),
+                            axis=0)
+    dUij_ic = nt.mabincount(k_t,
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rijHat_tc - (cosijk_t * rkjHat_tc.T).T).T).T / rkj_tc),
+                            len(i_t),
+                            axis=0)
+    dUik_ic = nt.mabincount(j_t,
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rkjHat_tc - (cosijk_t * rijHat_tc.T).T).T).T / rij_tc),
+                            len(i_t),
+                            axis=0)
+    dUki_ic = nt.mabincount(j_t,
+                            ((cAngle_t * (cosijk_t - cos0_t) * (rijHat_tc - (cosijk_t * rkjHat_tc.T).T).T).T / rkj_tc),
+                            len(i_t),
+                            axis=0)
+
+    dU = dUkj_ic + dUij_ic - dUik_ic - dUki_ic
     return dU
 
-def UTriplet_2D(positions_inital_ic, positions_final_ic, c_p, i_gamma, j_gamma, k_gamma):
-    U = 0.0
-    for m in range(len(i_gamma)):
-        index_i = i_gamma[m]
-        index_j = j_gamma[m]
-        index_k = k_gamma[m]
+def UTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBeam_t, i_t, j_t, k_t):
 
-        beamlengths_ij_0 = getBeamLength_2D(positions_inital_ic, i_gamma, j_gamma)
-        beamlengths_jk_0 = getBeamLength_2D(positions_inital_ic, j_gamma, k_gamma)
-        beamlengths_ki_0 = getBeamLength_2D(positions_inital_ic, k_gamma, i_gamma)
+    rij_tc = r_ic[i_t] - r_ic[j_t]
+    rij_t = np.linalg.norm(rij_tc, axis=1)
 
-        # compute the energy of every beam in the triplet
-        V_ij = 0.5 * c_p[m] * ((np.linalg.norm(positions_final_ic[index_j] - positions_final_ic[index_i]) - beamlengths_ij_0[m]) ** 2)
-        V_jk = 0.5 * c_p[m] * ((np.linalg.norm(positions_final_ic[index_k] - positions_final_ic[index_j]) - beamlengths_jk_0[m]) ** 2)
-        V_ki = 0.5 * c_p[m] * ((np.linalg.norm(positions_final_ic[index_i] - positions_final_ic[index_k]) - beamlengths_ki_0[m]) ** 2)
-        # add all beam energies up to overall triplet energy and sum all triplet energies
-        U += V_ij + V_jk + V_ki
+    rkj_tc = r_ic[k_t] - r_ic[j_t]
+    rkj_t = np.linalg.norm(rkj_tc, axis=1)
+
+    rik_tc = r_ic[i_t] - r_ic[k_t]
+    rik_t = np.linalg.norm(rik_tc, axis=1)
+
+    # compute the energy of every beam in the triplet
+    V_ij = 0.5 * cBeam_t * ((rij_t - beamlengths0ij_t) ** 2)
+    V_jk = 0.5 * cBeam_t * ((rkj_t - beamlengths0kj_t) ** 2)
+    V_ki = 0.5 * cBeam_t * ((rik_t - beamlengths0ik_t) ** 2)
+    # add all beam energies up to overall triplet energy and sum all triplet energies
+    U = V_ij + V_jk + V_ki
     return U
 
 
-def dUTriplet_2D(positions_inital_ic, positions_final_ic, c_p, i_gamma, j_gamma, k_gamma):
-    dU = np.zeros([len(positions_inital_ic), 2])
-    for m in range(len(i_gamma)):
-        index_i = i_gamma[m]
-        index_j = j_gamma[m]
-        index_k = k_gamma[m]
+def dUTriplet_2D(r_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, cBeam_3t, i_t, j_t, k_t):
 
-        beamlengths_ij_0 = getBeamLength_2D(positions_inital_ic, i_gamma, j_gamma)
-        beamlengths_jk_0 = getBeamLength_2D(positions_inital_ic, j_gamma, k_gamma)
-        beamlengths_ki_0 = getBeamLength_2D(positions_inital_ic, k_gamma, i_gamma)
+    rij_tc = r_ic[i_t] - r_ic[j_t]
+    rij_t = np.linalg.norm(rij_tc, axis=1)
+    rijHat_tc = rij_tc / rij_t
 
-        rhat_ij_pc = getRHat_2D(positions_final_ic, i_gamma, j_gamma)
-        rhat_jk_pc = getRHat_2D(positions_final_ic, j_gamma, k_gamma)
-        rhat_ki_pc = getRHat_2D(positions_final_ic, k_gamma, i_gamma)
+    rkj_tc = r_ic[k_t] - r_ic[j_t]
+    rkj_t = np.linalg.norm(rkj_tc, axis=1)
+    rkjHat_tc = rkj_tc / rkj_t
 
-        dV_ij = 0.5 * c_p[m] * ((np.linalg.norm(positions_final_ic[index_j] - positions_final_ic[index_i]) - beamlengths_ij_0[m]) ** 2) * rhat_ij_pc[m]
-        dV_jk = 0.5 * c_p[m] * ((np.linalg.norm(positions_final_ic[index_k] - positions_final_ic[index_j]) - beamlengths_jk_0[m]) ** 2) * rhat_jk_pc[m]
-        dV_ki = 0.5 * c_p[m] * ((np.linalg.norm(positions_final_ic[index_i] - positions_final_ic[index_k]) - beamlengths_ki_0[m]) ** 2) * rhat_ki_pc[m]
-        dU[m] = dV_ij + dV_jk + dV_ki
+    rik_tc = r_ic[i_t] - r_ic[k_t]
+    rik_t = np.linalg.norm(rik_tc, axis=1)
+    rikHat_tc = rik_tc / rik_t
+
+    cij_t = cBeam_3t[:,0]
+    ckj_t = cBeam_3t[:,1]
+    cik_t = cBeam_3t[:,2]
+
+    dVij_tc = nt.mabincount(i_t, (0.5 * cij_t * ((rij_t - beamlengths0ij_t) ** 2) * rijHat_tc), len(r_ic), axis=1)
+    dVjk_tc = nt.mabincount(j_t, (0.5 * ckj_t * ((rkj_t - beamlengths0kj_t) ** 2) * rkjHat_tc), len(r_ic), axis=1)
+    dVki_tc = nt.mabincount(k_t, (0.5 * cik_t * ((rik_t - beamlengths0ik_t) ** 2) * rikHat_tc), len(r_ic), axis=1)
+
+    dU = dVij_tc + dVjk_tc + dVki_tc
 
     return dU
 
@@ -112,28 +146,25 @@ def dUTriplet_2D(positions_inital_ic, positions_final_ic, c_p, i_gamma, j_gamma,
 returns an array containing the beamlength of every beam, index is the number of the beam
 """
 def getBeamLength_2D(r_ic, i_p, j_p):
-    # beamlengths of bodies (_n for bodies)
-    # calculate beam_length: sqrt((x_n+1 - x_n)² + (y_n+1 - y_n)²)
-    # 1: np.diff(r_ic, axis=0), 2.np.linalg.norm(position_diff_ic, axis=0)
-    beamlengths_p = np.zeros(len(i_p))
-    for m in range(len(i_p)):
-        index_i = i_p[m]
-        index_j = j_p[m]
-        beamlengths_p[m] = np.linalg.norm(r_ic[index_j] - r_ic[index_i])
+    beamlengths_p = np.linalg.norm(r_ic[i_p]-r_ic[j_p], axis=1)
     return beamlengths_p
+
+def getRHat_2D(r_ic, i_p, j_p):
+    rij_pc = r_ic[i_p] - r_ic[j_p]
+    rij_p = np.linalg.norm(rij_pc, axis=1)
+    rijHat = rij_pc / rij_p
+    return rijHat
 
 def getCosAngles_2D(r_ic, i_t, j_t, k_t):
     angles = np.zeros(len(i_t), dtype=float)
-    for m in range(len(i_t)):
-        index_i = i_t[m]
-        index_j = j_t[m]
-        index_k = k_t[m]
-        r_ij = r_ic[index_j] - r_ic[index_i]
-        r_kj = r_ic[index_j] - r_ic[index_k]
-        nominator = np.dot((r_ij), (r_kj))
-        denominator = np.linalg.norm(r_ij) * np.linalg.norm(r_kj)
-        # print("nom: ", nominator, "\ndom: ", denominator)
-        angles[m] = nominator/denominator
+    r_ij = r_ic[i_t] - r_ic[j_t]
+    r_kj = r_ic[k_t] - r_ic[j_t]
+    # print("\nrij: ", r_ij, "\nrkj: ", r_kj)
+    nominator = np.sum(np.multiply((r_ij), (r_kj)), axis=1)
+#     print("\nnominator: ",nominator)
+    denominator = np.linalg.norm(r_ij) * np.linalg.norm(r_kj)
+    # print("nom: ", nominator, "\ndom: ", denominator)
+    angles = nominator/denominator
     return angles
 
 # def getSinAngles_2D(r_ic, i_t, j_t, k_t):
@@ -219,19 +250,19 @@ if __name__ == "__main__":
     # plt.show()
 
 
-    # positions_initial_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
-    # positions_final_ic = np.array([[0, 1], [1, 1], [2, 2], [3.5, 1], [2, 0], [5, 1]])
+    positions_initial_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
+    positions_final_ic = np.array([[0, 1], [1, 1], [2, 2], [3.5, 1], [2, 0], [5, 1]])
     # beam calc
-    # cos_angles_0 = getCosAngles_2D(positions_initial_ic, i_t, j_t, k_t)
-    # cos_angles_ijk = getCosAngles_2D(positions_final_ic, i_t, j_t, k_t)
-    #
-    # # sin_angles_0 = getSinAngles_2D(positions_initial_ic, i_t, j_t, k_t)
-    # # sin_angles_ijk = getSinAngles_2D(positions_final_ic, i_t, j_t, k_t)
-    #
-    # print("\ncos_0: ", cos_angles_0, "\n\ncos_ijk: ", cos_angles_ijk)
-    # print("\nsin_0: ", sin_angles_0, "\n\nsin_ijk: ", sin_angles_ijk)
-    #
-    # print("\nU: ", UAngle_2D(positions_initial_ic, positions_final_ic, c_t, i_t, j_t, k_t))
-    # print("\ndU: ", dUAngle_2D(positions_initial_ic, positions_final_ic, c_t, i_t, j_t, k_t))
+    cos0_t = getCosAngles_2D(positions_initial_ic, i_t, j_t, k_t)
+    cosijk_t = getCosAngles_2D(positions_final_ic, i_t, j_t, k_t)
+
+    # sin_angles_0 = getSinAngles_2D(positions_initial_ic, i_t, j_t, k_t)
+    # sin_angles_ijk = getSinAngles_2D(positions_final_ic, i_t, j_t, k_t)
+
+    # print("\ncos_0: ", cos0_t.shape, "\n\ncos_ijk: ", cosijk_t.shape)
+    #print("\nsin_0: ", sin_angles_0, "\n\nsin_ijk: ", sin_angles_ijk)
+
+    print("\nU: ", UAngle_2D(cosijk_t, cos0_t, c_t))
+    print("\ndU: ", dUAngle_2D(positions_final_ic, cosijk_t, cos0_t, c_t, i_t, j_t, k_t))
 
 
