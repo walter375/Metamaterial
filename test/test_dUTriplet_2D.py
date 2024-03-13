@@ -42,9 +42,9 @@ positions_pulled_ic = np.array([[0, 0], [1, 0], [1.5,1]], dtype=float)
 i_p = np.array([0, 0, 1])
 j_p = np.array([1, 2, 2])
 
-i_t = np.array([1, 0, 1])
-j_t = np.array([0, 1, 2])
-k_t = np.array([2, 2, 0])
+i_t = np.array([1]) #, 0, 2])
+j_t = np.array([0]) #, 2, 1])
+k_t = np.array([2]) #, 1, 0])
 
 nb_bodies = len(i_p)
 nb_hinges = len(positions_initial_ic)
@@ -57,7 +57,21 @@ beamlengths0kj_t = rb.getBeamLength_2D(positions_initial_ic, k_t, j_t)
 beamlengths0ik_t = rb.getBeamLength_2D(positions_initial_ic, i_t, k_t)
 
 u_pulled = rb.UTriplet_2D(positions_pulled_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
+du = rb.dUTriplet_2D(positions_pulled_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
 def test_dU_2D_xy():
+    epsilon = 0.1
+    positions_epsilon_ic = np.array([[0, 0], [1, 0], [1.5+epsilon, 1+epsilon]], dtype=float)
+    positions_epsilon_half_ic = np.array([[0, 0], [1, 0], [1.5+epsilon/2, 1+epsilon/2]], dtype=float)
+
+    u_epsilon = rb.UTriplet_2D(positions_epsilon_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
+    du_epsilon_half = rb.dUTriplet_2D(positions_epsilon_half_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
+
+    test_numerical = (u_epsilon-u_pulled)/epsilon
+    test_analytical = np.sum(du_epsilon_half[-1])
+    # print("\ntest_analytical:\n", test_analytical,"\n", "\ntest_numerical:\n", test_numerical)
+    np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-3, atol=1e-3)
+
+def test_dU_2D_x():
     epsilon = 0.1
     positions_epsilon_ic = np.array([[0, 0], [1, 0], [1.5+epsilon, 1]], dtype=float)
     positions_epsilon_half_ic = np.array([[0, 0], [1, 0], [1.5+epsilon/2, 1]], dtype=float)
@@ -65,7 +79,21 @@ def test_dU_2D_xy():
     u_epsilon = rb.UTriplet_2D(positions_epsilon_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
     du_epsilon_half = rb.dUTriplet_2D(positions_epsilon_half_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
 
-    test_numerical = (u_epsilon-u_pulled)
-    test_analytical = du_epsilon_half
-    print("\ntest_analytical:\n", test_analytical, "\ntest_numerical:\n", test_numerical)
-    # np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-6, atol=1e-5)
+    test_numerical = (u_epsilon-u_pulled)/epsilon
+    test_analytical = du_epsilon_half[-1, 0]
+    print("\ntest_analytical:\n", test_analytical,"\n", "\ntest_numerical:\n", test_numerical)
+    np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-3, atol=1e-3)
+
+
+def test_dU_2D_y():
+    epsilon = 0.1
+    positions_epsilon_ic = np.array([[0, 0], [1, 0], [1.5, 1+epsilon]], dtype=float)
+    positions_epsilon_half_ic = np.array([[0, 0], [1, 0], [1.5, 1+epsilon/2]], dtype=float)
+
+    u_epsilon = rb.UTriplet_2D(positions_epsilon_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
+    du_epsilon_half = rb.dUTriplet_2D(positions_epsilon_half_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
+
+    test_numerical = (u_epsilon-u_pulled)/epsilon
+    test_analytical = du_epsilon_half[-1, 1]
+    print("\ntest_analytical:\n", test_analytical,"\n", "\ntest_numerical:\n", test_numerical)
+    np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-3, atol=1e-3)
