@@ -86,7 +86,7 @@ def test_dU_2D_x():
     np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-6, atol=1e-5)
 
 def test_dU_2D_y():
-    positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]], dtype=float)
+    positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]],dtype=float)
     positions_epsilon_half_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]], dtype=float)
 
     u_epsilon = np.zeros(nb_hinges, dtype=float)
