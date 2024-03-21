@@ -25,3 +25,6 @@
 """
 The entry point for the code
 """
+
+
+__version__ = '0.0.1'
