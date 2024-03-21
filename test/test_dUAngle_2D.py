@@ -23,7 +23,7 @@
 #
 
 """
-Tests the derivative function dUAngle_2D for the 2D rigidbody case
+Tests the derivative function dUAngle for the 2D rigidbody case
 """
 import pytest
 
@@ -37,7 +37,7 @@ from code import beam_2D as rb
     ([[0.3, 0.1], [1, -0.1], [1.2, 1]], [2], [0], [1]),
     ([[0.3, 0.1], [1, -0.1], [1.2, 1]], [0, 2], [1, 0], [2, 1]),
 ])
-def test_dU_2D_xy(positions_ic, i_t, j_t, k_t, epsilon=0.001):
+def test_dU_xy(positions_ic, i_t, j_t, k_t, epsilon=0.001):
     positions_ic = np.array(positions_ic, dtype=float)  # shape=(nb_hinges, 2)
     nb_hinges, nb_dims = positions_ic.shape
     i_t = np.array(i_t)
@@ -45,13 +45,13 @@ def test_dU_2D_xy(positions_ic, i_t, j_t, k_t, epsilon=0.001):
     k_t = np.array(k_t)
 
     c_t = np.ones(len(i_t))
-    # cos0_t = rb.getCosAngles_2D(positions_ic, i_t, j_t, k_t)
+    # cos0_t = rb.getCosAngles(positions_ic, i_t, j_t, k_t)
     cos0_t = np.ones_like(c_t)
+    cos_t = rb.getCosAngles(positions_ic, i_t, j_t, k_t)
 
-    cos_t = rb.getCosAngles_2D(positions_ic, i_t, j_t, k_t)
-
-    # u = rb.UAngle_2D(cos_t, cos0_t, c_t)
-    du_ic = rb.dUAngle_2D(positions_ic, cos_t, cos0_t, c_t, i_t, j_t, k_t)
+    angle = rb.Angle(c_t, i_t, j_t, k_t)
+    # u = rb.UAngle(cos_t, cos0_t, c_t)
+    du_ic = angle.dUAngle(positions_ic, cos_t, cos0_t)
 
     for i in range(nb_hinges):
         for d in range(nb_dims):
@@ -61,11 +61,11 @@ def test_dU_2D_xy(positions_ic, i_t, j_t, k_t, epsilon=0.001):
             positions_minus_epsilon_half_ic = positions_ic - diff_ic
             positions_plus_epsilon_half_ic = positions_ic + diff_ic
 
-            cosMinusEpsilonHalf_t = rb.getCosAngles_2D(positions_minus_epsilon_half_ic, i_t, j_t, k_t)
-            cosPlusEpsilonHalf_t = rb.getCosAngles_2D(positions_plus_epsilon_half_ic, i_t, j_t, k_t)
+            cosMinusEpsilonHalf_t = rb.getCosAngles(positions_minus_epsilon_half_ic, i_t, j_t, k_t)
+            cosPlusEpsilonHalf_t = rb.getCosAngles(positions_plus_epsilon_half_ic, i_t, j_t, k_t)
 
-            u_minus_epsilon_half = rb.UAngle_2D(cosMinusEpsilonHalf_t, cos0_t, c_t)
-            u_plus_epsilon_half = rb.UAngle_2D(cosPlusEpsilonHalf_t, cos0_t, c_t)
+            u_minus_epsilon_half = angle.UAngle(cosMinusEpsilonHalf_t, cos0_t)
+            u_plus_epsilon_half = angle.UAngle(cosPlusEpsilonHalf_t, cos0_t)
 
             du_numerical = (u_plus_epsilon_half - u_minus_epsilon_half) / epsilon
 

@@ -27,81 +27,41 @@ Tests the derivative function dUBeam_2D for the 2D rigidbody case
 """
 
 import numpy as np
-import math
+import pytest
 from code import beam_2D as rb
 
-epsilon = 0.001
-positions_initial_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]], dtype=float)  # shape=(nb_hinges, 2)
-positions_pulled_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]], dtype=float)
 
-i_n = np.array([0, 1, 2, 1, 4, 3])
-j_n = np.array([1, 2, 3, 4, 3, 5])
+@pytest.mark.parametrize('positions_ic, i_p, j_p', [
+    ([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]], [0, 1, 2, 1, 4, 3], [1, 2, 3, 4, 3, 5]),
+    ([[0.2, 0.1], [1, -0.5], [1.3, 0.9]], [2, 1], [0, 2]),
+    ([[0, 1.5], [1, 1], [2, 2], [3, 1], [2.7, 0], [4, 1]], [0, 1, 2, 1, 4, 3], [1, 2, 3, 4, 3, 5]),
+    ([[0, 0], [1, 0], [1, 1]], [0], [1])
+])
 
-nb_bodies = len(i_n)
-nb_hinges = len(positions_initial_ic)
-k_n = np.ones(nb_bodies)
-beam_lengths_n = rb.getBeamLength_2D(positions_initial_ic, i_n, j_n)
+def test_dU_2D_xy(positions_ic, i_p ,j_p, epsilon=0.001):
+    positions_ic = np.array(positions_ic, dtype=float)
+    nb_hinges, nb_dims = positions_ic.shape
+    #nb_bodies = len(i_p)
+    i_p = np.array(i_p)
+    j_p = np.array(j_p)
+    c_p = np.ones(len(i_p))
 
-u_pulled = rb.UBeam_2D(positions_pulled_ic, beam_lengths_n, k_n, i_n, j_n)
-#du_pulled = rb.dUBeam_2D(positions_pulled_ic, beamlengths_p, k_n, i_i, j_i)
-def test_dU_2D_xy():
-    positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4,0]], dtype=float)
-    positions_epsilon_half_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4,0]], dtype=float)
+    beam = rb.Beam(c_p, i_p, j_p)
+    beam_lengths_p = rb.getBeamLength(positions_ic, i_p, j_p)
 
-    u_epsilon = np.zeros(nb_hinges)
-    du_epsilon_half = np.zeros([nb_hinges,2])
+    du_ic = beam.dUBeam(positions_ic, beam_lengths_p)
 
-    for i in range(len(positions_epsilon_ic)):
-        positions_epsilon_ic[i] = positions_epsilon_ic[i] + epsilon
-        positions_epsilon_half_ic[i] = positions_epsilon_half_ic[i] + epsilon/2
-        u_epsilon[i] = rb.UBeam_2D(positions_epsilon_ic, beam_lengths_n, k_n, i_n, j_n)
-        temp = rb.dUBeam_2D(positions_epsilon_half_ic, beam_lengths_n, k_n, i_n, j_n)
-        du_epsilon_half[i] = temp[i]
-        positions_epsilon_ic[i] = positions_pulled_ic[i]
-        positions_epsilon_half_ic[i] = positions_pulled_ic[i]
+    for i in range(nb_hinges):
+        for d in range(nb_dims):
+            diff_ic = np.zeros_like(positions_ic)
+            diff_ic[i,d] = epsilon/2
 
-    test_numerical = (u_epsilon-u_pulled)/epsilon
-    test_analytical = np.sum(du_epsilon_half, axis=1)
-    # print("\ntest_analytical: ", test_analytical, "\ntest_numerical: ", test_numerical)
-    np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-6, atol=1e-5)
+            positions_minus_epsilon_half_ic = positions_ic - diff_ic
+            positions_plus_epsilon_half_ic = positions_ic + diff_ic
 
-def test_dU_2D_x():
-    positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]], dtype=float)
-    positions_epsilon_half_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4 , 0]], dtype=float)
+            u_minus_epsilon_half = beam.UBeam(positions_minus_epsilon_half_ic, beam_lengths_p)
+            u_plus_epsilon_half = beam.UBeam(positions_plus_epsilon_half_ic, beam_lengths_p)
 
-    u_epsilon = np.zeros(nb_hinges, dtype=float)
-    du_epsilon_half = np.zeros([nb_hinges,2], dtype=float)
+            du_numerical = (u_plus_epsilon_half - u_minus_epsilon_half) / epsilon
 
-    for i in range(len(positions_epsilon_ic)):
-        positions_epsilon_ic[i,0] = positions_epsilon_ic[i,0] + epsilon
-        positions_epsilon_half_ic[i,0] = positions_epsilon_half_ic[i,0] + epsilon/2
-        u_epsilon[i] = rb.UBeam_2D(positions_epsilon_ic, beam_lengths_n, k_n, i_n, j_n)
-        temp = rb.dUBeam_2D(positions_epsilon_half_ic, beam_lengths_n, k_n, i_n, j_n)
-        du_epsilon_half[i] = temp[i]
-        positions_epsilon_ic[i] = positions_pulled_ic[i]
-        positions_epsilon_half_ic[i] = positions_pulled_ic[i]
-    test_numerical = (u_epsilon-u_pulled)/epsilon
-    test_analytical = du_epsilon_half[:,0]
-    # print("\ntest_analytical: ", test_analytical, "\ntest_numerical: ", test_numerical)
-    np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-6, atol=1e-5)
-
-def test_dU_2D_y():
-    positions_epsilon_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]],dtype=float)
-    positions_epsilon_half_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 0]], dtype=float)
-
-    u_epsilon = np.zeros(nb_hinges, dtype=float)
-    du_epsilon_half = np.zeros([nb_hinges,2], dtype=float)
-
-    for i in range(len(positions_epsilon_ic)):
-        positions_epsilon_ic[i,1] = positions_epsilon_ic[i,1] + epsilon
-        positions_epsilon_half_ic[i,1] = positions_epsilon_half_ic[i,1] + epsilon/2
-        u_epsilon[i] = rb.UBeam_2D(positions_epsilon_ic, beam_lengths_n, k_n, i_n, j_n)
-        temp = rb.dUBeam_2D(positions_epsilon_half_ic, beam_lengths_n, k_n, i_n, j_n)
-        du_epsilon_half[i] = temp[i]
-        positions_epsilon_ic[i] = positions_pulled_ic[i]
-        positions_epsilon_half_ic[i] = positions_pulled_ic[i]
-
-    test_numerical = (u_epsilon-u_pulled)/epsilon
-    test_analytical = du_epsilon_half[:,1]
-    # print("\ntest_analytical: ", test_analytical, "\ntest_numerical: ", test_numerical)
-    np.testing.assert_allclose(test_analytical, test_numerical, rtol=1e-6, atol=1e-5)
+            np.testing.assert_allclose(du_ic[i,d], du_numerical, rtol=1e-6, atol=1e-6)

@@ -38,7 +38,7 @@ from code import beam_2D as rb
     ([[0.2, 0.1], [1, -0.5], [1.3, 0.9]], [2,1], [0,2], [1,0]),
     ([[0.2, 0.1], [1, -0.5], [1.3, 0.9], [3, 1.5]], [2,1], [0,2], [1,3])
 ])
-def test_dU_2D(positions_ic, i_t, j_t, k_t, epsilon=0.001):
+def test_dU(positions_ic, i_t, j_t, k_t, epsilon=0.001):
     positions_ic = np.array(positions_ic, dtype=float)
     nb_hinges, nb_dims = positions_ic.shape
     i_t = np.array(i_t)
@@ -46,11 +46,13 @@ def test_dU_2D(positions_ic, i_t, j_t, k_t, epsilon=0.001):
     k_t = np.array(k_t)
     c_t3 = np.ones((len(i_t), 3))
 
-    beamlengths0ij_t = rb.getBeamLength_2D(positions_ic, i_t, j_t)
-    beamlengths0kj_t = rb.getBeamLength_2D(positions_ic, k_t, j_t)
-    beamlengths0ik_t = rb.getBeamLength_2D(positions_ic, i_t, k_t)
+    triplet = rb.Triplet(c_t3, i_t, j_t, k_t)
 
-    du_ic = rb.dUTriplet_2D(positions_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t, c_t3, i_t, j_t, k_t)
+    beamlengths0ij_t = rb.getBeamLength(positions_ic, i_t, j_t)
+    beamlengths0kj_t = rb.getBeamLength(positions_ic, k_t, j_t)
+    beamlengths0ik_t = rb.getBeamLength(positions_ic, i_t, k_t)
+
+    du_ic = triplet.dUTriplet(positions_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t)
 
     for i in range(nb_hinges):
         for d in range(nb_dims):
@@ -60,10 +62,10 @@ def test_dU_2D(positions_ic, i_t, j_t, k_t, epsilon=0.001):
             positions_minus_epsilon_half_ic = positions_ic - diff_ic
             positions_plus_epsilon_half_ic = positions_ic + diff_ic
 
-            u_minus_epsilon_half = rb.UTriplet_2D(positions_minus_epsilon_half_ic, beamlengths0ij_t, beamlengths0kj_t,
-                                                  beamlengths0ik_t, c_t3, i_t, j_t, k_t)
-            u_plus_epsilon_half = rb.UTriplet_2D(positions_plus_epsilon_half_ic, beamlengths0ij_t, beamlengths0kj_t,
-                                                 beamlengths0ik_t, c_t3, i_t, j_t, k_t)
+            u_minus_epsilon_half = triplet.UTriplet(positions_minus_epsilon_half_ic, beamlengths0ij_t, beamlengths0kj_t,
+                                                  beamlengths0ik_t)
+            u_plus_epsilon_half = triplet.UTriplet(positions_plus_epsilon_half_ic, beamlengths0ij_t, beamlengths0kj_t,
+                                                 beamlengths0ik_t)
             du_numerical = (u_plus_epsilon_half - u_minus_epsilon_half) / epsilon
 
             # print("analytic, numerical: ", du_ic[i, d], du_numerical)
