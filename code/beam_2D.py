@@ -40,22 +40,13 @@ class Beam:
         dU_p -= nt.mabincount(self.j_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, len(r_ic), axis=0)
         return dU_p
 
-    def dUBeamObjective(self, ric_flat, beamlengths_p, con1, con2):
-        r_ic = ric_flat.reshape(nb_hinges - 2, 2)
-        U = 0.0
-        for m in range(len(i_p)):
-            if m == 0:
-                index_j = j_p[m] - 1
-                U += 0.5 * c_p[m] * ((np.linalg.norm(r_ic[index_j] - con1) - beamlengths_p[m]) ** 2)
-            elif m == (len(i_p) - 1):
-                index_i = i_p[m] - 1
-                U += 0.5 * c_p[m] * ((np.linalg.norm(con2 - r_ic[index_i]) - beamlengths_p[m]) ** 2)
-            else:
-                index_i = i_p[m] - 1
-                index_j = j_p[m] - 1
-                U += 0.5 * c_p[m] * ((np.linalg.norm(r_ic[index_j] - r_ic[index_i]) - beamlengths_p[m]) ** 2)
-        return U
-
+    def UBeamObjective(self, ric_flat, beamlengths_p, con1, con2):
+        ric_flat = np.insert(ric_flat, 0, con1)
+        ric_flat = np.append(ric_flat, con2)
+        r_ic = ric_flat.reshape(len(ric_flat) // 2, 2)
+        rij_pc = r_ic[self.j_p] - r_ic[self.i_p]  # vector rij
+        rij_p = np.linalg.norm(rij_pc, axis=1)  # length of vector rij
+        return np.sum(0.5 * self.c_p * (rij_p - beamlengths_p) ** 2)
 
 class Angle:
     def __init__(self, c_t, i_t, j_t, k_t):
@@ -104,6 +95,14 @@ class Angle:
                                minlength=r_ic.shape[0],
                                axis=1)
         return dU_ci.T
+
+    def UAngleObjective(self, ric_flat, cos0_t,con1, con2):
+        ric_flat = np.insert(ric_flat, 0, con1)
+        ric_flat = np.append(ric_flat, con2)
+        r_ic = ric_flat.reshape(len(ric_flat) // 2, 2)
+        cosijk_t = getCosAngles(r_ic, self.i_t, self.j_t, self.k_t)
+        return np.sum(0.5 * self.c_t * (cosijk_t - cos0_t) ** 2)
+
 
 
 class Triplet:
@@ -198,12 +197,18 @@ def getCosAngles(r_ic, i_t, j_t, k_t):
     rij_tc = r_ic[i_t] - r_ic[j_t]
     rkj_tc = r_ic[k_t] - r_ic[j_t]
     # print("\nrij: ", r_ij, "\nrkj: ", r_kj)
-    nominator = np.sum(rij_tc * rkj_tc, axis=1)
-    #     print("\nnominator: ",nominator)
-    denominator = np.linalg.norm(rij_tc, axis=1) * np.linalg.norm(rkj_tc, axis=1)
-    # print("nom: ", nominator, "\ndom: ", denominator)
-    angles = nominator / denominator
-    return angles
+    nominator_t = np.sum(rij_tc * rkj_tc, axis=1)
+    # print("\nnominator: ",nominator)
+    denominator_t = np.linalg.norm(rij_tc, axis=1) * np.linalg.norm(rkj_tc, axis=1)
+    angles_t = nominator_t / denominator_t
+    return angles_t
+def con1(ric_flat):
+    start = ric_flat[0:2]
+    return start - ric_flat[0:2]
+
+def con2(ric_flat):
+    end = ric_flat[-2:]
+    return end - ric_flat[-2:]
 
 
 # def getSinAngles(r_ic, i_t, j_t, k_t):
@@ -235,54 +240,71 @@ if __name__ == "__main__":
                0,0
     """
 
-    # beam
+    ''' initialization '''
+    # positions
+    r0_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
+    r1_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4.8, 1]])
+
+    # pairs
     i_p = np.array([0, 1, 2, 1, 4, 3])
     j_p = np.array([1, 2, 3, 4, 3, 5])
 
     # angles
     i_t = np.array([0, 2, 4, 3, 1, 4, 2, 5])  # containing first end point
-    j_t = np.array([1, 1, 1, 2, 4, 3, 3, 3])  # containing angle points
+    j_t = np.array([1, 1, 1, 2, 4, 3, 3, 3])  # containing angle points2
     k_t = np.array([2, 4, 0, 1, 3, 2, 5, 4])  # containing second end point
 
-    positions_initial_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
-    positions_final_ic = np.array([[0, 1], [1, 1], [2, 2], [3.5, 1], [2, 0], [5, 1]])
+    nb_bodies = i_p.shape[0]
+    nb_hinges = r0_ic.shape[0]
+    nb_angles = i_t.shape[0]
 
-    nb_bodies = len(i_p)
-    nb_hinges = len(positions_initial_ic)
-    nb_angles = len(i_t)
-
-    positions_flat = positions_final_ic[1:-1]
-    positions_flat = positions_flat.reshape((nb_hinges - 2) * 2)
-    beamlengths_p = getBeamLength(positions_initial_ic, i_p, j_p)
-    c_p = np.full(nb_bodies, 10)
-
-
+    ''' beams '''
+    beamlengths_p = getBeamLength(r0_ic, i_p, j_p)
+    c_p = np.ones(nb_bodies)
     beam = Beam(c_p, i_p, j_p)
-    beam.UBeam(positions_final_ic, beamlengths_p)
-    beam.dUBeam(positions_final_ic, beamlengths_p)
+    beam.UBeam(r1_ic, beamlengths_p)
+    beam.dUBeam(r1_ic, beamlengths_p)
 
-    con1 = positions_initial_ic[0]
-    con2 = positions_final_ic[-1]
-    res = scipy.optimize.minimize(beam.dUBeamObjective, x0=positions_flat, args=(beamlengths_p, con1, con2)) #, constraints=cons)#,jac=dU)
-    points = res.x
-    points = np.insert(points, 0, con1)
-    points = np.append(points, con2)
-    points = points.reshape(nb_hinges,2)
-    plt.subplot(111, aspect=1)
-    for i, j in zip(i_p, j_p):
-        plt.plot([positions_initial_ic[i][0], positions_initial_ic[j][0]], [positions_initial_ic[i][1], positions_initial_ic[j][1]], 'ob--')
-        plt.plot([points[i][0], points[j][0]], [points[i][1], points[j][1]], 'xk-')
-    plt.show()
-
-
-    # angles
-    i_t = np.array([0, 2, 4, 3, 1, 4, 2, 5])  # containing first end point
-    j_t = np.array([1, 1, 1, 2, 4, 3, 3, 3])  # containing angle points
-    k_t = np.array([2, 4, 0, 1, 3, 2, 5, 4])  # containing second end point
+    ''' angles '''
     c_t = np.ones(nb_angles)
     angle = Angle(c_t, i_t, j_t, k_t)
-    cos0_t = getCosAngles(positions_initial_ic, i_t, j_t, k_t)
-    cosijk_t = getCosAngles(positions_final_ic, i_t, j_t, k_t)
+    cos0_t = getCosAngles(r0_ic, i_t, j_t, k_t)
+    cosijk_t = getCosAngles(r1_ic, i_t, j_t, k_t)
+    # print("\nU: ", angle.UAngle(cosijk_t, cos0_t))
+    # print("\ndU: ", angle.dUAngle(r1_ic, cosijk_t, cos0_t))
 
-    print("\nU: ", angle.UAngle(cosijk_t, cos0_t))
-    print("\ndU: ", angle.dUAngle(positions_final_ic, cosijk_t, cos0_t))
+    ''' optimizer '''
+    con1 = r0_ic[0]
+    con2 = r1_ic[-1]
+    ric_flat = r1_ic[1:-1]
+    ric_flat = ric_flat.reshape((nb_hinges - 2) * 2)
+    # beams
+    res = scipy.optimize.minimize(beam.UBeamObjective, x0=ric_flat, args=(beamlengths_p, con1, con2))#, jac=beam.dUBeam)
+    points1 = res.x
+    points1 = np.insert(points1, 0, con1)
+    points1 = np.append(points1, con2)
+    points1 = points1.reshape(nb_hinges,2)
+    f, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=all, sharey=all)
+    for i, j in zip(i_p, j_p):
+        ax1.plot([r0_ic[i][0], r0_ic[j][0]], [r0_ic[i][1], r0_ic[j][1]], 'ob--')
+        ax2.plot([points1[i][0], points1[j][0]], [points1[i][1], points1[j][1]], 'xk-')
+
+    # angles
+    res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t,con1, con2))# constraints=cons)
+    points2 = res.x
+    points2 = np.insert(points2, 0, con1)
+    points2 = np.append(points2, con2)
+    points2 = points2.reshape(nb_hinges,2)
+    # print(getCosAngles(points2, i_t, j_t, k_t))
+    # print(cos0_t)
+    for i, j in zip(i_p, j_p):
+        #ax2.plot([r0_ic[i][0], r0_ic[j][0]], [r0_ic[i][1], r0_ic[j][1]], 'ob--')
+        ax3.plot([points2[i][0], points2[j][0]], [points2[i][1], points2[j][1]], 'xk-')
+    ax1.set_title("Inital system")
+    ax2.set_title("Beam model optimization")
+    ax3.set_title("Angle model optimization")
+    ax1.grid(True)
+    ax2.grid(True)
+    ax3.grid(True)
+    plt.show()
+
