@@ -389,11 +389,16 @@ if __name__ == "__main__":
 
     ''' optimizer '''
     border = np.concatenate((left, right), 0)
+    border = np.sort(border)
     ric_flat = np.delete(r2_ic, border,0).flatten()
     r_ic = ric_flat.reshape(len(ric_flat)//2, 2)
-    r_ic =np.insert(r_ic, left, r2_ic[left], axis=0)
+
+    for i in range(len(border)):
+        r_ic =np.insert(r_ic, border[i], r2_ic[border[i]], axis=0)
+
     print(r_ic)
     print(r2_ic)
+
 
     # beams
     res = scipy.optimize.minimize(beam.UBeamObjective, x0=ric_flat, args=(beamlengths_p, con1, con2))#, jac=beam.dUBeam)
