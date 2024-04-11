@@ -96,10 +96,10 @@ class Angle:
                                axis=1)
         return dU_ci.T
 
-    def UAngleObjective(self, ric_flat, cos0_t,con1, con2):
-        ric_flat = np.insert(ric_flat, 0, con1)
-        ric_flat = np.append(ric_flat, con2)
+    def UAngleObjective(self, ric_flat, cos0_t, rinit_ic):
         r_ic = ric_flat.reshape(len(ric_flat) // 2, 2)
+        # r_ic = np.insert(r_ic, left, rinit_ic[left])
+        # r_ic = np.inster(r_ic, right, rinit_ic[right])
         cosijk_t = getCosAngles(r_ic, self.i_t, self.j_t, self.k_t)
         return np.sum(0.5 * self.c_t * (cosijk_t - cos0_t) ** 2)
 
@@ -202,13 +202,33 @@ def getCosAngles(r_ic, i_t, j_t, k_t):
     denominator_t = np.linalg.norm(rij_tc, axis=1) * np.linalg.norm(rkj_tc, axis=1)
     angles_t = nominator_t / denominator_t
     return angles_t
-def con1(ric_flat):
-    start = ric_flat[0:2]
-    return start - ric_flat[0:2]
+
+def getBorderPoints(r_ic):
+    # upper bounds
+    xmax, ymax = np.max(r_ic, axis=0)
+    # x
+    rows, cols = np.where(r_ic == xmax)
+    right = rows[np.where(cols == 0)]
+    # y
+    rows, cols = np.where(r_ic == ymax)
+    upper = rows[np.where(cols == 1)]
+    # lower bounds
+    xmin, ymin = np.min(r_ic, axis=0)
+    # x
+    rows, cols = np.where(r_ic == xmin)
+    left = rows[np.where(cols == 0)]
+    # y
+    rows, cols = np.where(r_ic == ymin)
+    lower = rows[np.where(cols == 1)]
+
+    return left, right, lower, upper
+def conLeft(ric_flat):
+    temp1 = ric_flat[0:2]
+    return temp1 - ric_flat[0:2]
 
 def con2(ric_flat):
-    end = ric_flat[-2:]
-    return end - ric_flat[-2:]
+    temp2 = ric_flat[-2:]
+    return temp2 - ric_flat[-2:]
 
 def conLen(ric_flat):
     ric_flat = np.insert(ric_flat, 0, con1)
@@ -292,40 +312,40 @@ if __name__ == "__main__":
     points1 = np.insert(points1, 0, con1)
     points1 = np.append(points1, con2)
     points1 = points1.reshape(nb_hinges,2)
-    print(points1)
+    # print(points1)
     f, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=all, sharey=all)
     for i, j in zip(i_p, j_p):
         ax1.plot([r0_ic[i][0], r0_ic[j][0]], [r0_ic[i][1], r0_ic[j][1]], 'ob--')
         ax2.plot([points1[i][0], points1[j][0]], [points1[i][1], points1[j][1]], 'xk-')
 
     # angles
-    cons = [{'type': 'eq', 'fun': conLen}]
-    res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t,con1, con2), constraints=cons)
-    points2 = res.x
-    points2 = np.insert(points2, 0, con1)
-    points2 = np.append(points2, con2)
-    points2 = points2.reshape(nb_hinges,2)
-    print(points2)
-    # print(getCosAngles(points2, i_t, j_t, k_t))
-    # print(cos0_t)
-    for i, j in zip(i_p, j_p):
-        #ax2.plot([r0_ic[i][0], r0_ic[j][0]], [r0_ic[i][1], r0_ic[j][1]], 'ob--')
-        ax3.plot([points2[i][0], points2[j][0]], [points2[i][1], points2[j][1]], 'xk-')
-    ax1.set_title("Inital system")
-    ax2.set_title("Beam model optimization")
-    ax3.set_title("Angle model optimization")
-    ax1.grid(True)
-    ax2.grid(True)
-    ax3.grid(True)
-    plt.show()
+    # cons = [{'type': 'eq', 'fun': conLen}]
+    # res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t))# constraints=cons)
+    # points2 = res.x
+    # points2 = np.insert(points2, 0, con1)
+    # points2 = np.append(points2, con2)
+    # points2 = points2.reshape(nb_hinges,2)
+    # print(points2)
+    # # print(getCosAngles(points2, i_t, j_t, k_t))
+    # # print(cos0_t)
+    # for i, j in zip(i_p, j_p):
+    #     #ax2.plot([r0_ic[i][0], r0_ic[j][0]], [r0_ic[i][1], r0_ic[j][1]], 'ob--')
+    #     ax3.plot([points2[i][0], points2[j][0]], [points2[i][1], points2[j][1]], 'xk-')
+    # ax1.set_title("Inital system")
+    # ax2.set_title("Beam model optimization")
+    # ax3.set_title("Angle model optimization")
+    # ax1.grid(True)
+    # ax2.grid(True)
+    # ax3.grid(True)
+    # plt.show()
 
     """
             2d structure
-           o---o----o----o---o     
+           0---1----2----3---4     
                 \  / \  /
-                 oo   oo
+                5 6   7 8
                 /  \ /  \
-           o---o----o----o---o           
+           9---10---11---12--13           
     """
 
     ''' initialization '''
@@ -361,42 +381,51 @@ if __name__ == "__main__":
     # print("\nU: ", angle.UAngle(cosijk_t, cos0_t))
     # print("\ndU: ", angle.dUAngle(r1_ic, cosijk_t, cos0_t))
 
+    left, right, upper, lower = getBorderPoints(r2_ic)
+    # print(r2_ic[left], left)
+    # print(r2_ic[right], right)
+    # print(r2_ic[upper], upper)
+    # print(r2_ic[lower], lower)
+
     ''' optimizer '''
-    con1 = r2_ic[0]
-    con2 = r3_ic[-1]
-    ric_flat = r2_ic[1:-1]
-    ric_flat = ric_flat.reshape((nb_hinges - 2) * 2)
+    border = np.concatenate((left, right), 0)
+    ric_flat = np.delete(r2_ic, border,0).flatten()
+    r_ic = ric_flat.reshape(len(ric_flat)//2, 2)
+    r_ic =np.insert(r_ic, left, r2_ic[left], axis=0)
+    print(r_ic)
+    print(r2_ic)
+
     # beams
     res = scipy.optimize.minimize(beam.UBeamObjective, x0=ric_flat, args=(beamlengths_p, con1, con2))#, jac=beam.dUBeam)
     points3 = res.x
     points3 = np.insert(points3, 0, con1)
     points3 = np.append(points3, con2)
     points3 = points3.reshape(nb_hinges,2)
-    print(points3)
+    # print(points3)
     f, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=all, sharey=all)
     for i, j in zip(i_p, j_p):
         ax1.plot([r2_ic[i][0], r2_ic[j][0]], [r2_ic[i][1], r2_ic[j][1]], 'ob--')
         ax2.plot([points3[i][0], points3[j][0]], [points3[i][1], points3[j][1]], 'xk-')
 
     # angles
-    cons = [{'type': 'eq', 'fun': conLen}]
-    res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t,con1, con2), constraints=cons)
-    points4 = res.x
-    points4 = np.insert(points4, 0, con1)
-    points4 = np.append(points4, con2)
-    points4 = points4.reshape(nb_hinges,2)
-    print(points4)
-    # print(getCosAngles(points2, i_t, j_t, k_t))
-    # print(cos0_t)
-    for i, j in zip(i_p, j_p):
-        #ax2.plot([r0_ic[i][0], r0_ic[j][0]], [r0_ic[i][1], r0_ic[j][1]], 'ob--')
-        ax3.plot([points4[i][0], points4[j][0]], [points4[i][1], points4[j][1]], 'xk-')
-    ax1.set_title("Inital system")
-    ax2.set_title("Beam model optimization")
-    ax3.set_title("Angle model optimization")
-    ax1.grid(True)
-    ax2.grid(True)
-    ax3.grid(True)
-    plt.show()
+    # cons = [{'type': 'eq', 'fun': conLen}]
+    # res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t), constraints=cons)
+    # points4 = res.x
+    # points4 = np.insert(points4, 0, con1)
+    # points4 = np.append(points4, con2)
+    # points4 = points4.reshape(nb_hinges,2)
+    # # print(points4)
+    # # print(getCosAngles(points2, i_t, j_t, k_t))
+    # # print(cos0_t)
+    # for i, j in zip(i_p, j_p):
+    #     #ax2.plot([r0_ic[i][0], r0_ic[j][0]], [r0_ic[i][1], r0_ic[j][1]], 'ob--')
+    #     ax3.plot([points4[i][0], points4[j][0]], [points4[i][1], points4[j][1]], 'xk-')
+    # ax1.set_title("Inital system")
+    # ax2.set_title("Beam model optimization")
+    # ax3.set_title("Angle model optimization")
+    # ax1.grid(True)
+    # ax2.grid(True)
+    # ax3.grid(True)
+    #plt.show()
 
 
