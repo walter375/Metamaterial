@@ -210,6 +210,13 @@ def con2(ric_flat):
     end = ric_flat[-2:]
     return end - ric_flat[-2:]
 
+def conLen(ric_flat):
+    ric_flat = np.insert(ric_flat, 0, con1)
+    ric_flat = np.append(ric_flat, con2)
+    r_ic = ric_flat.reshape(len(ric_flat) // 2, 2)
+    len0 = getBeamLength(ric_init, i_p, j_p)
+    len1 = getBeamLength(r_ic, i_p, j_p)
+    return len0 - len1
 
 # def getSinAngles(r_ic, i_t, j_t, k_t):
 #     angles = np.zeros(len(i_t), dtype=float)
@@ -242,8 +249,9 @@ if __name__ == "__main__":
 
     ''' initialization '''
     # positions
-    r0_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
-    r1_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4.8, 1]])
+    ric_init = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])  # shape=(nb_hinges, 2)
+    r0_ic = ric_init
+    r1_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]])
 
     # pairs
     i_p = np.array([0, 1, 2, 1, 4, 3])
@@ -284,17 +292,20 @@ if __name__ == "__main__":
     points1 = np.insert(points1, 0, con1)
     points1 = np.append(points1, con2)
     points1 = points1.reshape(nb_hinges,2)
+    print(points1)
     f, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=all, sharey=all)
     for i, j in zip(i_p, j_p):
         ax1.plot([r0_ic[i][0], r0_ic[j][0]], [r0_ic[i][1], r0_ic[j][1]], 'ob--')
         ax2.plot([points1[i][0], points1[j][0]], [points1[i][1], points1[j][1]], 'xk-')
 
     # angles
-    res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t,con1, con2))# constraints=cons)
+    cons = [{'type': 'eq', 'fun': conLen}]
+    res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t,con1, con2), constraints=cons)
     points2 = res.x
     points2 = np.insert(points2, 0, con1)
     points2 = np.append(points2, con2)
     points2 = points2.reshape(nb_hinges,2)
+    print(points2)
     # print(getCosAngles(points2, i_t, j_t, k_t))
     # print(cos0_t)
     for i, j in zip(i_p, j_p):
@@ -307,4 +318,85 @@ if __name__ == "__main__":
     ax2.grid(True)
     ax3.grid(True)
     plt.show()
+
+    """
+            2d structure
+           o---o----o----o---o     
+                \  / \  /
+                 oo   oo
+                /  \ /  \
+           o---o----o----o---o           
+    """
+
+    ''' initialization '''
+    # positions
+    r2_ic = np.array([[0, 1], [1,1], [2.5,1], [4,1], [5,1], [1.5,0.5], [2,0.5], [3,0.5], [3.5,0.5], [0, 0], [1,0], [2.5,0], [4,0], [5,0]], dtype=float)  # shape=(nb_hinges, 2)
+    r3_ic = np.array([[0, 1], [1,1], [2.5,1], [4,1], [6,1], [1.5,0.5], [2,0.5], [3,0.5], [3.5,0.5], [0, 0], [1,0], [2.5,0], [4,0], [6,0]], dtype=float)
+    ric_init = r2_ic
+    # pairs
+    i_p = np.array([0, 1, 2, 3, 1, 2, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12])
+    j_p = np.array([1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 11, 12, 10, 11, 12, 13])
+
+    # angles
+    i_t = np.array([0, 5, 1, 6, 7, 2, 8, 1, 2, 2, 3, 5, 11, 6, 7, 12, 8, 13])  # containing first end point
+    j_t = np.array([1, 1, 2, 2, 2, 3, 3, 5, 6, 7, 8, 10, 10, 11, 11, 11, 12, 12])  # containing angle points2
+    k_t = np.array([5, 2, 6, 7, 3, 8, 4, 10, 11, 11, 12, 9, 5, 10, 6, 7, 11, 8 ])  # containing second end point
+
+    nb_bodies = i_p.shape[0]
+    nb_hinges = r2_ic.shape[0]
+    nb_angles = i_t.shape[0]
+
+    ''' beams '''
+    beamlengths_p = getBeamLength(r2_ic, i_p, j_p)
+    c_p = np.ones(nb_bodies)
+    beam = Beam(c_p, i_p, j_p)
+    beam.UBeam(r3_ic, beamlengths_p)
+    beam.dUBeam(r3_ic, beamlengths_p)
+
+    ''' angles '''
+    c_t = np.ones(nb_angles)
+    angle = Angle(c_t, i_t, j_t, k_t)
+    cos0_t = getCosAngles(r2_ic, i_t, j_t, k_t)
+    cosijk_t = getCosAngles(r3_ic, i_t, j_t, k_t)
+    # print("\nU: ", angle.UAngle(cosijk_t, cos0_t))
+    # print("\ndU: ", angle.dUAngle(r1_ic, cosijk_t, cos0_t))
+
+    ''' optimizer '''
+    con1 = r2_ic[0]
+    con2 = r3_ic[-1]
+    ric_flat = r2_ic[1:-1]
+    ric_flat = ric_flat.reshape((nb_hinges - 2) * 2)
+    # beams
+    res = scipy.optimize.minimize(beam.UBeamObjective, x0=ric_flat, args=(beamlengths_p, con1, con2))#, jac=beam.dUBeam)
+    points3 = res.x
+    points3 = np.insert(points3, 0, con1)
+    points3 = np.append(points3, con2)
+    points3 = points3.reshape(nb_hinges,2)
+    print(points3)
+    f, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=all, sharey=all)
+    for i, j in zip(i_p, j_p):
+        ax1.plot([r2_ic[i][0], r2_ic[j][0]], [r2_ic[i][1], r2_ic[j][1]], 'ob--')
+        ax2.plot([points3[i][0], points3[j][0]], [points3[i][1], points3[j][1]], 'xk-')
+
+    # angles
+    cons = [{'type': 'eq', 'fun': conLen}]
+    res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t,con1, con2), constraints=cons)
+    points4 = res.x
+    points4 = np.insert(points4, 0, con1)
+    points4 = np.append(points4, con2)
+    points4 = points4.reshape(nb_hinges,2)
+    print(points4)
+    # print(getCosAngles(points2, i_t, j_t, k_t))
+    # print(cos0_t)
+    for i, j in zip(i_p, j_p):
+        #ax2.plot([r0_ic[i][0], r0_ic[j][0]], [r0_ic[i][1], r0_ic[j][1]], 'ob--')
+        ax3.plot([points4[i][0], points4[j][0]], [points4[i][1], points4[j][1]], 'xk-')
+    ax1.set_title("Inital system")
+    ax2.set_title("Beam model optimization")
+    ax3.set_title("Angle model optimization")
+    ax1.grid(True)
+    ax2.grid(True)
+    ax3.grid(True)
+    plt.show()
+
 
