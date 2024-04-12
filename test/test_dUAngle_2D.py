@@ -30,13 +30,18 @@ import pytest
 import numpy as np
 from Code import beam_2D as rb
 
-
+def test_getCosAngle():
+    assert rb.getCosAngles(np.array([[0,0],[1,0],[0,1]]), [1], [0], [2]) == pytest.approx(0.0)
+    assert rb.getCosAngles(np.array([[0,0],[1,0],[2,0]]), [0], [1], [2]) == pytest.approx(-1.0)
+    assert rb.getCosAngles(np.array([[0,0],[0,1],[0,1]]), [1], [0], [2]) == pytest.approx(1.0)
+    assert rb.getCosAngles(np.array([[0,0],[0,1],[1,1]]), [1], [0], [2]) == pytest.approx(0.70710, rel=1e-5)
+    assert rb.getCosAngles(np.array([[0,0],[6.5,0],[6.5,3.75]]), [1], [0], [2]) == pytest.approx(0.86602, rel=1e-3)
 @pytest.mark.parametrize('positions_ic,i_t,j_t,k_t', [
     ([[0, 0], [1, 0], [1, 1]], [0], [1], [2]),
     ([[0.3, 0.1], [1, -0.1], [1.2, 1]], [0], [1], [2]),
     ([[0.3, 0.1], [1, -0.1], [1.2, 1]], [2], [0], [1]),
     ([[0.3, 0.1], [1, -0.1], [1.2, 1]], [0, 2], [1, 0], [2, 1]),
-])
+    ])
 def test_dU_xy(positions_ic, i_t, j_t, k_t, epsilon=0.001):
     positions_ic = np.array(positions_ic, dtype=float)  # shape=(nb_hinges, 2)
     nb_hinges, nb_dims = positions_ic.shape
