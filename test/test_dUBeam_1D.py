@@ -26,7 +26,7 @@ Tests the derivative function dU for the 1D rigidbody case
 """
 
 import numpy as np
-from code import beam_1D as rb
+from Code import beam_1D as rb
 
 
 def test_dU_1D():

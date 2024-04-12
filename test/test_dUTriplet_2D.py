@@ -28,7 +28,7 @@ Tests the derivative function dUTriplet_2D for the 2D rigidbody case
 
 import numpy as np
 import pytest
-from code import beam_2D as rb
+from Code import beam_2D as rb
 
 
 @pytest.mark.parametrize('positions_ic,i_t,j_t,k_t', [

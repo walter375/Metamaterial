@@ -28,7 +28,7 @@ Tests the derivative function dUAngle for the 2D rigidbody case
 import pytest
 
 import numpy as np
-from code import beam_2D as rb
+from Code import beam_2D as rb
 
 
 @pytest.mark.parametrize('positions_ic,i_t,j_t,k_t', [

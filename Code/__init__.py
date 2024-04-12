@@ -23,7 +23,7 @@
 #
 
 """
-The entry point for the code
+The entry point for the Code
 """
 
 
