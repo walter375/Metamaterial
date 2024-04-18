@@ -309,339 +309,201 @@ def conLen(ric_flat):
     # print(len1-len0)
     return len1 - len0
 
-
+def runOptimizer(function, x0, arguments, cons={}):
+    res = scipy.optimize.minimize(function, x0=x0, args=(arguments), constraints=cons)  # , jac=beam.dUBeam)
+    points = ricUnflat(res.x, r_stressed_ic, border, x, y)
+    return points
+def plotResults(points1, points2, points3, points4):
+    f, ([ax1, ax2], [ax3, ax4]) = plt.subplots(2, 2, sharex=all, sharey=all)
+    for i, j in zip(i_p, j_p):
+        ax1.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
+        ax2.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
+        ax3.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
+        ax4.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
+        ax1.plot([points1[i][0], points1[j][0]], [points1[i][1], points1[j][1]], 'vy:')
+        ax2.plot([points2[i][0], points2[j][0]], [points2[i][1], points2[j][1]], 'xr--')
+        ax3.plot([points3[i][0], points3[j][0]], [points3[i][1], points3[j][1]], 'xb--')
+        ax4.plot([points4[i][0], points4[j][0]], [points4[i][1], points4[j][1]], 'og--')
+    ax1.set_title("Beam model")
+    ax2.set_title("Angle model optimization")
+    ax3.set_title("Angle+Beam stiffness=1")
+    ax4.set_title("Angle+Beam, stiffness=%i" % (stiffness))
+    ax1.grid(True)
+    ax2.grid(True)
+    ax3.grid(True)
+    ax4.grid(True)
+    plt.show()
 """
 objective U function for using in the optimizer.
 borderCon constraints are defined by con1 and con2
 """
 if __name__ == "__main__":
-    """
-        2d structure
-                    2 
-        _/\_    0_1/ \3_5
-         \/        \ /
-                x   4
-               0,0
-    """
 
-    ''' initialization '''
-    # # positions
-    # r_orig_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]], dtype=float)  # shape=(nb_hinges, 2)
-    # diff = np.zeros_like(r_orig_ic)
-    # diff[5, 0] += 0.5
-    # r_stressed_ic = r_orig_ic + diff
-    # # pairs
-    # i_p = np.array([0, 1, 2, 1, 4, 3])
-    # j_p = np.array([1, 2, 3, 4, 3, 5])
-    # # angles
-    # i_t = np.array([0, 2, 4, 3, 1, 4, 2, 5])  # containing first end point
-    # j_t = np.array([1, 1, 1, 2, 4, 3, 3, 3])  # containing angle points2
-    # k_t = np.array([2, 4, 0, 1, 3, 2, 5, 4])  # containing second end point
-    #
-    # nb_bodies = i_p.shape[0]
-    # nb_hinges = r_orig_ic.shape[0]
-    # nb_angles = i_t.shape[0]
-    #
-    # #constrains
-    # x = 1
-    # y = 1
-    # left = 1
-    # right = 1
-    # stiffness = 50
-    # ''' beams '''
-    # beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
-    # c_p = np.ones(nb_bodies)
-    # beam = Beam(c_p, i_p, j_p)
-    # beam.UBeam(r_stressed_ic, beamlengths_p)
-    # beam.dUBeam(r_stressed_ic, beamlengths_p)
-    # ''' angles '''
-    # c_t = np.ones(nb_angles)
-    # angle = Angle(c_t, i_t, j_t, k_t)
-    # cos0_t = getCosAngles(r_orig_ic, i_t, j_t, k_t)
+    from Structures import structure1 as s1
+    r_orig_ic = s1.r_orig_ic
+    r_stressed_ic = s1.r_stressed_ic
+    i_p = s1.i_p
+    j_p = s1.j_p
+    i_t = s1.i_t
+    j_t = s1.j_t
+    k_t = s1.k_t
+    nb_bodies = i_p.shape[0]
+    nb_hinges = r_orig_ic.shape[0]
+    nb_angles = i_t.shape[0]
+    # modifications
+    x = 1
+    y = 1
+    left = 1
+    right = 1
+    stiffness = 50
+    ''' beams '''
+    beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
+    c_p = np.ones(nb_bodies)
+    beam = Beam(c_p, i_p, j_p)
+    beam.UBeam(r_stressed_ic, beamlengths_p)
+    beam.dUBeam(r_stressed_ic, beamlengths_p)
+    ''' angles '''
+    c_t = np.ones(nb_angles)
+    angle = Angle(c_t, i_t, j_t, k_t)
+    cos0_t = getCosAngles(r_orig_ic, i_t, j_t, k_t)
+    cosijk_t = getCosAngles(r_stressed_ic, i_t, j_t, k_t)
+    ''' beam angle combination '''
+    ba = BeamAngle(beam, angle)
+    ''' optimizer '''
+    border = getBorderPoints(r_stressed_ic, left, right)
+    ric_flat = ricFlat(border, x, y)
+    p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p)
+    p2 = runOptimizer(angle.UAngleObjective, ric_flat, (cos0_t))
+    p3 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t))
+    beam.c_p = np.full(nb_bodies, stiffness)
+    p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t))
+    plotResults(p1, p2, p3, p4)
+
+    from Structures import structure2 as s2
+    r_orig_ic = s2.r_orig_ic
+    r_stressed_ic = s2.r_stressed_ic
+    i_p = s2.i_p
+    j_p = s2.j_p
+    i_t = s2.i_t
+    j_t = s2.j_t
+    k_t = s2.k_t
+    nb_bodies = i_p.shape[0]
+    nb_hinges = r_orig_ic.shape[0]
+    nb_angles = i_t.shape[0]
+    # modifications
+    x = 1
+    y = 0
+    left = 1
+    right = 1
+    stiffness = 10
+    ''' beams '''
+    c_p = np.ones(nb_bodies)
+    beam = Beam(c_p, i_p, j_p)
+    beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
+    ''' angles '''
+    c_t = np.ones(nb_angles)
+    angle = Angle(c_t, i_t, j_t, k_t)
+    cos0_t = getCosAngles(r_orig_ic, i_t, j_t, k_t)
     # cosijk_t = getCosAngles(r_stressed_ic, i_t, j_t, k_t)
-    # ''' beam angle combination '''
-    # ba = BeamAngle(beam, angle)
-    # ''' optimizer '''
-    # border = getBorderPoints(r_stressed_ic, left, right)
-    # ric_flat = ricFlat(border, x, y)
-    # # beams
-    # res = scipy.optimize.minimize(beam.UBeamObjective, x0=ric_flat, args=(beamlengths_p))#, jac=beam.dUBeam)
-    # points1 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # # angles
-    # cons1 = [{'type': 'eq', 'fun': conLen}]
-    # res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t), constraints=cons1) #, jac=angle.dUAngle)
-    # points2 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # res = scipy.optimize.minimize(ba.UBeamAngleObjective, x0=ric_flat, args=(beamlengths_p, cos0_t))  # , jac=angle.dUAngle)
-    # points3 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # beam.c_p = np.full(nb_bodies, stiffness)
-    # res = scipy.optimize.minimize(ba.UBeamAngleObjective, x0=ric_flat,
-    #                               args=(beamlengths_p, cos0_t))  # , jac=angle.dUAngle)
-    # points4= ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # f, ([ax1, ax2], [ax3, ax4]) = plt.subplots(2, 2, sharex=all, sharey=all)
-    # for i, j in zip(i_p, j_p):
-    #     ax1.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     ax2.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     ax3.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     ax4.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     ax1.plot([points1[i][0], points1[j][0]], [points1[i][1], points1[j][1]], 'vy:')
-    #     ax2.plot([points2[i][0], points2[j][0]], [points2[i][1], points2[j][1]], 'xr--')
-    #     ax3.plot([points3[i][0], points3[j][0]], [points3[i][1], points3[j][1]], 'xb--')
-    #     ax4.plot([points4[i][0], points4[j][0]], [points4[i][1], points4[j][1]], 'og--')
-    # ax1.set_title("Beam model")
-    # ax2.set_title("Angle model optimization")
-    # ax3.set_title("Angle+Beam stiffness=1")
-    # ax4.set_title("Angle+Beam, stiffness=%i" %(stiffness))
-    # ax1.grid(True)
-    # ax2.grid(True)
-    # ax3.grid(True)
-    # ax4.grid(True)
-    # # plt.show()
-    #
-    # """
-    #         2d structure
-    #        0---1----2----3---4
-    #             \  / \  /
-    #             5 6   7 8
-    #             /  \ /  \
-    #        9---10---11---12--13
-    # """
-    #
-    # ''' initialization '''
-    # # positions
-    # r_orig_ic = np.array([[0, 1], [1,1], [2.5,1], [4,1], [5,1], [1.5,0.5], [2,0.5], [3,0.5], [3.5,0.5], [0, 0], [1,0], [2.5,0], [4,0], [5,0]], dtype=float)  # shape=(nb_hinges, 2)
-    # diff = np.zeros_like(r_orig_ic)
-    # diff[4,0] += 1
-    # diff[13,0] += 0
-    # r_stressed_ic = r_orig_ic + diff
-    # # pairs
-    # i_p = np.array([0, 1, 2, 3, 1, 2, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12])
-    # j_p = np.array([1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 11, 12, 10, 11, 12, 13])
-    # # angles
-    # i_t = np.array([0, 5, 1, 6, 7, 2, 8, 1, 2, 2, 3, 5, 11, 6, 7, 12, 8, 13])  # containing first end point
-    # j_t = np.array([1, 1, 2, 2, 2, 3, 3, 5, 6, 7, 8, 10, 10, 11, 11, 11, 12, 12])  # containing angle points2
-    # k_t = np.array([5, 2, 6, 7, 3, 8, 4, 10, 11, 11, 12, 9, 5, 10, 6, 7, 11, 8 ])  # containing second end point
-    #
-    # nb_bodies = i_p.shape[0]
-    # nb_hinges = r_orig_ic.shape[0]
-    # nb_angles = i_t.shape[0]
-    #
-    # x = 1
-    # y = 0
-    # left = 1
-    # right = 1
-    # stiffness = 10
-    #
-    # ''' beams '''
-    # c_p = np.ones(nb_bodies)
-    # beam = Beam(c_p, i_p, j_p)
-    # beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
-    # ''' angles '''
-    # c_t = np.ones(nb_angles)
-    # angle = Angle(c_t, i_t, j_t, k_t)
-    # cos0_t = getCosAngles(r_orig_ic, i_t, j_t, k_t)
-    # cosijk_t = getCosAngles(r_stressed_ic, i_t, j_t, k_t)
-    # ''' beam angle combination '''
-    # ba = BeamAngle(beam, angle)
-    # ''' optimizer '''
-    # border = getBorderPoints(r_stressed_ic, left, right)
-    # ric_flat = ricFlat(border, x, y)
-    #
-    # # beams
-    # res = scipy.optimize.minimize(beam.UBeamObjective, x0=ric_flat, args=(beamlengths_p))#, jac=beam.dUBeam)
-    # points1 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # # angles
-    # cons = [{'type': 'eq', 'fun': conLen}]
-    # res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t), constraints=cons)  # , jac=angle.dUAngle)
-    # points2 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # # combination
-    # res = scipy.optimize.minimize(ba.UBeamAngleObjective, x0=ric_flat, args=(beamlengths_p, cos0_t))  # , jac=angle.dUAngle)
-    # points3 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # beam.c_p = np.full(nb_bodies, stiffness)
-    # res = scipy.optimize.minimize(ba.UBeamAngleObjective, x0=ric_flat, args=(beamlengths_p, cos0_t))  # , jac=angle.dUAngle)
-    # points4 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    #
-    # f, ([axs0, axs1], [axs2, axs3]) = plt.subplots(2, 2, sharex=True, sharey=True)
-    # for i, j in zip(i_p, j_p):
-    #     axs0.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     axs1.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     axs2.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     axs3.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     axs0.plot([points1[i][0], points1[j][0]], [points1[i][1], points1[j][1]], 'vy:')
-    #     axs1.plot([points2[i][0], points2[j][0]], [points2[i][1], points2[j][1]], 'xr--')
-    #     axs2.plot([points3[i][0], points3[j][0]], [points3[i][1], points3[j][1]], 'xb--')
-    #     axs3.plot([points4[i][0], points4[j][0]], [points4[i][1], points4[j][1]], 'og--')
-    # axs0.set_title("Beam model optimization")
-    # axs1.set_title("Angle model optimization")
-    # axs2.set_title("Angle+Beam, stiffness = 1", )
-    # axs3.set_title("Angle+Beam, stiffness = %i" %(stiffness))
-    # axs0.grid(True)
-    # axs1.grid(True)
-    # axs2.grid(True)
-    # axs3.grid(True)
-    # # plt.show()
-    #
-    # """
-    #         2d structure
-    #        0--1---2--3
-    #         \ /\ /\ /
-    #          4  5  6
-    #         / \/ \/ \
-    #        7--8---9--10
-    # """
-    # '''Initialization'''
-    # # positions
-    # r_orig_ic = np.array([[0, 2], [1,2], [2,2], [3,2], [0.5,1], [1.5,1], [2.5,1], [0,0], [1,0], [2,0], [3,0]], dtype=float)  # shape=(nb_hinges, 2)
-    # diff = np.zeros_like(r_orig_ic)
-    # diff[3,0] += 1
-    # diff[10,0] += 1
-    # r_stressed_ic = r_orig_ic + diff
-    # # # pairs
-    # i_p = np.array([0, 1, 2, 0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6, 7, 8, 9])
-    # j_p = np.array([1, 2, 3, 4, 4, 5, 5, 6, 6, 7, 8, 8, 9, 9, 10, 8, 9, 10])
-    # #angles
-    # i_a = np.array([1, 4, 0, 5, 2, 5, 1, 6, 3, 6, 2, 7, 1, 8, 2, 9, 3, 8, 9, 10, 4, 7, 4, 5, 8, 5, 6, 9])  # containing first end point
-    # j_a = np.array([0, 1, 4, 1, 1, 2, 5, 2, 2, 3, 6, 4, 4, 5, 5, 6, 6, 4, 5, 6, 7, 8, 8, 8, 9, 9, 9, 10])  # containing angle points2
-    # k_a = np.array([4, 0, 1, 4, 5, 1, 2, 5, 6, 2, 3, 0, 8, 1, 9, 2, 10, 7, 8, 9, 8, 4, 5, 9, 5, 6, 10, 6])  # containing second end point
-    # # triplets
-    # i_t = np.array([0, 1, 2, 7, 8, 9])  # containing first end point
-    # j_t = np.array([1, 2, 3, 4, 5, 6])  # containing angle points2
-    # k_t = np.array([4, 5, 6, 8, 9, 10])  # containing second end point
-    #
-    # nb_bodies = i_p.shape[0]
-    # nb_hinges = r_orig_ic.shape[0]
-    # nb_triplets = i_t.shape[0]
-    # nb_angles = i_a.shape[0]
-    #
-    # diff[3, 0] += 1
-    # diff[10, 0] += 1
-    # r_stressed_ic = r_orig_ic + diff
-    # x = 1
-    # y = 0
-    # left = 1
-    # right = 1
-    # stiffness = 10
-    #
-    # ''' beams '''
-    # c_p = np.ones(nb_bodies)
-    # beam = Beam(c_p, i_p, j_p)
-    # beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
-    # ''' angles '''
-    # c_a = np.ones(nb_angles)
-    # angle = Angle(c_a, i_a, j_a, k_a)
-    # cos0_a = getCosAngles(r_orig_ic, i_a, j_a, k_a)
-    # cosijk_a = getCosAngles(r_stressed_ic, i_a, j_a, k_a)
-    # ''' Triplet'''
-    # beamlengths_ij_t = getBeamLength(r_orig_ic, i_t, j_t)
-    # beamlengths_kj_t = getBeamLength(r_orig_ic, j_t, k_t)
-    # beamlengths_ik_t = getBeamLength(r_orig_ic, i_t, k_t)
-    # c_t3 = np.ones([nb_triplets, 3])
-    # triplet = Triplet(c_t3, i_t, j_t, k_t)
-    # ''' beam angle combination '''
-    # ba = BeamAngle(beam, angle)
-    # ''' optimizer '''
-    # border = getBorderPoints(r_stressed_ic, left, right)
-    # ric_flat = ricFlat(border, x, y)
-    # #beams
-    # res = scipy.optimize.minimize(beam.UBeamObjective, x0=ric_flat, args=(beamlengths_p))  # , jac=beam.dUBeam)
-    # points0 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # # triplets
-    # res = scipy.optimize.minimize(triplet.UTripletObjective, x0=ric_flat, args=(beamlengths_ij_t, beamlengths_kj_t, beamlengths_ik_t))  # , jac=angle.dUAngle)
-    # points1 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # # combination
-    # res = scipy.optimize.minimize(ba.UBeamAngleObjective, x0=ric_flat, args=(beamlengths_p,cos0_a))  # , jac=angle.dUAngle)
-    # points3 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # beam.c_p = np.full(nb_bodies, stiffness)
-    # res = scipy.optimize.minimize(ba.UBeamAngleObjective, x0=ric_flat, args=(beamlengths_p, cos0_a))  # , jac=angle.dUAngle)
-    # points4 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    # f, ([axs0, axs1], [axs2, axs3]) = plt.subplots(2, 2, sharex=True, sharey=True)
-    # for i, j in zip(i_p, j_p):
-    #     axs0.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     axs1.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     axs2.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     axs3.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    #     axs0.plot([points0[i][0], points0[j][0]], [points0[i][1], points0[j][1]], 'vy:')
-    #     axs1.plot([points1[i][0], points1[j][0]], [points1[i][1], points1[j][1]], 'xr--')
-    #     axs2.plot([points3[i][0], points3[j][0]], [points3[i][1], points3[j][1]], 'xb--')
-    #     axs3.plot([points4[i][0], points4[j][0]], [points4[i][1], points4[j][1]], 'og--')
-    # axs0.set_title("beam model")
-    # axs1.set_title("Triplet model")
-    # axs2.set_title("Angle+Beam, stiffness = 1", )
-    # axs3.set_title("Angle+Beam, stiffness = %i" %(stiffness))
-    # axs0.grid(True)
-    # axs1.grid(True)
-    # axs2.grid(True)
-    # axs3.grid(True)
-    # plt.show()
+    ''' beam angle combination '''
+    ba = BeamAngle(beam, angle)
+    ''' optimizer '''
+    border = getBorderPoints(r_stressed_ic, left, right)
+    ric_flat = ricFlat(border, x, y)
+    p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p)
+    p2 = runOptimizer(angle.UAngleObjective, ric_flat, (cos0_t))
+    p3 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t))
+    beam.c_p = np.full(nb_bodies, stiffness)
+    p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t))
+    plotResults(p1, p2, p3, p4)
 
-import gripper as gripper
-r_orig_ic = gripper.r_orig_ic
-r_stressed_ic = gripper.r_stressed_ic
-# pairs
-i_p = gripper.i_p
-j_p = gripper.j_p
-# angles
-i_t = gripper.i_t
-j_t = gripper.j_t
-k_t = gripper.k_t
+    from Structures import structure3 as s3
+    r_orig_ic = s3.r_orig_ic
+    r_stressed_ic = s3.r_stressed_ic
+    i_p = s3.i_p
+    j_p = s3.j_p
+    i_a_t = s3.i_a_t
+    j_a_t = s3.j_a_t
+    k_a_t = s3.k_a_t
+    i_t = s3.i_t
+    j_t = s3.j_t
+    k_t = s3.k_t
+    nb_bodies = i_p.shape[0]
+    nb_hinges = r_orig_ic.shape[0]
+    nb_triplets = i_t.shape[0]
+    nb_angles = i_a_t.shape[0]
+    # modifications
+    x = 1
+    y = 0
+    left = 1
+    right = 1
+    stiffness = 10
+    ''' beams '''
+    c_p = np.ones(nb_bodies)
+    beam = Beam(c_p, i_p, j_p)
+    beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
+    ''' angles '''
+    c_a_t = np.ones(nb_angles)
+    angle = Angle(c_a_t, i_a_t, j_a_t, k_a_t)
+    cos0_t = getCosAngles(r_orig_ic, i_a_t, j_a_t, k_a_t)
+    # cosijk_t = getCosAngles(r_stressed_ic, i_a_t, j_a_t, k_a_t)
+    ''' Triplet'''
+    beamlengths_ij_t = getBeamLength(r_orig_ic, i_t, j_t)
+    beamlengths_kj_t = getBeamLength(r_orig_ic, j_t, k_t)
+    beamlengths_ik_t = getBeamLength(r_orig_ic, i_t, k_t)
+    c_t3 = np.ones([nb_triplets, 3])
+    triplet = Triplet(c_t3, i_t, j_t, k_t)
+    ''' beam angle combination '''
+    ba = BeamAngle(beam, angle)
+    ''' optimizer '''
+    border = getBorderPoints(r_stressed_ic, left, right)
+    ric_flat = ricFlat(border, x, y)
+    p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p)
+    p2 = runOptimizer(triplet.UTripletObjective, ric_flat, (beamlengths_ij_t, beamlengths_kj_t, beamlengths_ik_t))
+    p3 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t))
+    beam.c_p = np.full(nb_bodies, stiffness)
+    p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t))
+    plotResults(p1, p2, p3, p4)
 
-nb_bodies = i_p.shape[0]
-nb_hinges = r_orig_ic.shape[0]
-nb_angles = i_t.shape[0]
-# constrains
-x = 1
-y = 1
-left = 1
-right = 0
-stiffness = 50
-''' beams '''
-beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
-c_p = np.ones(nb_bodies)
-beam = Beam(c_p, i_p, j_p)
-beam.UBeam(r_stressed_ic, beamlengths_p)
-beam.dUBeam(r_stressed_ic, beamlengths_p)
-''' angles '''
-c_t = np.ones(nb_angles)
-angle = Angle(c_t, i_t, j_t, k_t)
-cos0_t = getCosAngles(r_orig_ic, i_t, j_t, k_t)
-cosijk_t = getCosAngles(r_stressed_ic, i_t, j_t, k_t)
-''' beam angle combination '''
-ba = BeamAngle(beam, angle)
-''' optimizer '''
-border = getBorderPoints(r_stressed_ic, left, right)
-border = np.sort(np.append(border, 3)) # add point 3 to points to be fixed
+    from Structures import InverterMechanism as im
+    r_orig_ic = im.r_orig_ic
+    r_stressed_ic = im.r_stressed_ic
+    i_p = im.i_p
+    j_p = im.j_p
+    i_t = im.i_t
+    j_t = im.j_t
+    k_t = im.k_t
+    nb_bodies = i_p.shape[0]
+    nb_hinges = r_orig_ic.shape[0]
+    nb_angles = i_t.shape[0]
+    # constrains
+    x = 1
+    y = 1
+    left = 1
+    right = 0
+    stiffness = 50
+    ''' beams '''
+    beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
+    c_p = np.ones(nb_bodies)
+    beam = Beam(c_p, i_p, j_p)
+    ''' angles '''
+    c_t = np.ones(nb_angles)
+    angle = Angle(c_t, i_t, j_t, k_t)
+    cos0_t = getCosAngles(r_orig_ic, i_t, j_t, k_t)
+    #cosijk_t = getCosAngles(r_stressed_ic, i_t, j_t, k_t)
+    ''' beam angle combination '''
+    ba = BeamAngle(beam, angle)
+    ''' optimizer '''
+    border = getBorderPoints(r_stressed_ic, left, right)
+    border = np.sort(np.append(border, 3)) # add point 3 to points to be fixed
+    ric_flat = ricFlat(border, x, y)
+    p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p)
+    cons = [{'type': 'eq', 'fun': conLen}]
+    p2 = runOptimizer(angle.UAngleObjective, ric_flat, (cos0_t), cons)
+    p3 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t))
+    beam.c_p = np.full(nb_bodies, stiffness)
+    p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t))
+    plotResults(p1,p2,p3,p4)
 
-ric_flat = ricFlat(border, x, y)
-# beams
-res = scipy.optimize.minimize(beam.UBeamObjective, x0=ric_flat, args=(beamlengths_p))  # , jac=beam.dUBeam)
-points1 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-# angles
-cons1 = [{'type': 'eq', 'fun': conLen}]
-res = scipy.optimize.minimize(angle.UAngleObjective, x0=ric_flat, args=(cos0_t),
-                              constraints=cons1)  # , jac=angle.dUAngle)
-points2 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-res = scipy.optimize.minimize(ba.UBeamAngleObjective, x0=ric_flat, args=(beamlengths_p, cos0_t))  # , jac=angle.dUAngle)
-points3 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-beam.c_p = np.full(nb_bodies, stiffness)
-res = scipy.optimize.minimize(ba.UBeamAngleObjective, x0=ric_flat,
-                              args=(beamlengths_p, cos0_t))  # , jac=angle.dUAngle)
-points4 = ricUnflat(res.x, r_stressed_ic, border, x, y)
-f, ([ax1, ax2], [ax3, ax4]) = plt.subplots(2, 2, sharex=all, sharey=all)
-for i, j in zip(i_p, j_p):
-    ax1.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    ax2.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    ax3.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    ax4.plot([r_orig_ic[i][0], r_orig_ic[j][0]], [r_orig_ic[i][1], r_orig_ic[j][1]], 'ok-')
-    ax1.plot([points1[i][0], points1[j][0]], [points1[i][1], points1[j][1]], 'vy:')
-    ax2.plot([points2[i][0], points2[j][0]], [points2[i][1], points2[j][1]], 'xr--')
-    ax3.plot([points3[i][0], points3[j][0]], [points3[i][1], points3[j][1]], 'xb--')
-    ax4.plot([points4[i][0], points4[j][0]], [points4[i][1], points4[j][1]], 'og--')
-ax1.set_title("Beam model")
-ax2.set_title("Angle model optimization")
-ax3.set_title("Angle+Beam stiffness=1")
-ax4.set_title("Angle+Beam, stiffness=%i" % (stiffness))
-ax1.grid(True)
-ax2.grid(True)
-ax3.grid(True)
-ax4.grid(True)
-plt.show()
+
 

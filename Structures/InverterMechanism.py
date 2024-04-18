@@ -2,7 +2,7 @@ import numpy as np
 
 r_orig_ic = np.array([[0, 0], [1, 0], [0.75, 0.5], [0.01,1], [2,1], [2.25,1], [0.75, 1.5], [0, 2], [1, 2]], dtype=float)  # shape=(nb_hinges, 2)
 diff = np.zeros_like(r_orig_ic)
-diff[3,0] += 0.4
+diff[3,0] += 0.5
 r_stressed_ic = r_orig_ic + diff
 # pairs
 i_p = np.array([0, 0, 1, 1, 2, 3, 4, 6, 6, 7, 8])
