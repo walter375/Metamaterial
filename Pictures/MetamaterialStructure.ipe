@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE ipe SYSTEM "ipe.dtd">
 <ipe version="70218" creator="Ipe 7.2.24">
-<info created="D:20240429104501" modified="D:20240429104720"/>
+<info created="D:20240429104501" modified="D:20240429135855"/>
 <ipestyle name="basic">
 <symbol name="arrow/arc(spx)">
 <path stroke="sym-stroke" fill="sym-stroke" pen="sym-pen">
@@ -318,504 +318,407 @@ h
 128 768
 128 768 c
 </path>
-<path matrix="1 0 0 1 16 -32" stroke="black" fill="white">
-176 800 m
-176 736 l
-240 736 l
-240 800 l
-h
-</path>
-<path matrix="1 0 0 1 16 -64" stroke="black" fill="white">
-320 832 m
-320 768 l
-384 768 l
-384 832 l
-h
-</path>
-<path matrix="1 0 0 1 16 -64" stroke="black" fill="white">
-384 832 m
-384 768 l
-448 768 l
-448 832 l
-h
-</path>
-<path matrix="1 0 0 1 16 -64" stroke="black" fill="white">
-448 832 m
-448 768 l
-512 768 l
-512 832 l
-h
-</path>
-<path matrix="1 0 0 1 16 -64" stroke="black" fill="white">
-320 768 m
-320 704 l
-384 704 l
-384 768 l
-h
-</path>
-<path matrix="1 0 0 1 16 -64" stroke="black" fill="white">
-384 768 m
-384 704 l
-448 704 l
-448 768 l
-h
-</path>
-<path matrix="1 0 0 1 16 -64" stroke="black" fill="white">
-448 768 m
-448 704 l
-512 704 l
-512 768 l
-h
-</path>
-<path matrix="1 0 0 1 16 -64" stroke="black" fill="white">
-320 704 m
-320 640 l
-384 640 l
-384 704 l
-h
-</path>
-<path matrix="1 0 0 1 16 -64" stroke="black" fill="white">
-384 704 m
-384 640 l
-448 640 l
-448 704 l
-h
-</path>
-<path matrix="1 0 0 1 16 -64" stroke="black" fill="white">
-448 704 m
-448 640 l
-512 640 l
-512 704 l
-h
-</path>
-<path matrix="1 0 0 1 96 -112" stroke="black">
-352 784 m
-352 784 l
-352 784 l
-352 784 l
-h
-</path>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="320 832" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="384 768" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="384 832" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="320 768" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="320 704" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="384 704" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="320 640" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="384 640" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="448 640" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="512 640" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="512 704" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="448 704" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="448 768" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="512 768" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="512 832" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -64" name="mark/fdisk(sfx)" pos="448 832" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="176 736" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="240 736" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="240 800" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="176 800" size="large" stroke="black" fill="white"/>
 <use matrix="1 0 0 1 -32 0" name="mark/fdisk(sfx)" pos="64 768" size="large" stroke="black" fill="white"/>
 <use matrix="1 0 0 1 -32 0" name="mark/fdisk(sfx)" pos="128 768" size="large" stroke="black" fill="white"/>
-<path matrix="1 0 0 1 16 -32" stroke="black">
+<path matrix="1 0 0 1 16 192" stroke="black">
 176 576 m
 240 576
 240 576 c
 </path>
-<path matrix="1 0 0 1 16 -32" stroke="black">
+<path matrix="1 0 0 1 16 192" stroke="black">
 176 512 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 16 -32" stroke="black">
+<path matrix="1 0 0 1 16 192" stroke="black">
 176 512 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 16 -32" stroke="black">
+<path matrix="1 0 0 1 16 192" stroke="black">
 176 576 m
 192 544
 192 544 c
 </path>
-<path matrix="1 0 0 1 16 -32" stroke="black">
+<path matrix="1 0 0 1 16 192" stroke="black">
 240 576 m
 224 544 l
 </path>
-<path matrix="1 0 0 1 16 -32" stroke="black">
+<path matrix="1 0 0 1 16 192" stroke="black">
 224 544 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 16 -32" stroke="black">
+<path matrix="1 0 0 1 16 192" stroke="black">
 160 544 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 16 -32" stroke="black">
+<path matrix="1 0 0 1 16 192" stroke="black">
 224 544 m
 256 544 l
 </path>
-<path matrix="1 0 0 1 144 -32" stroke="black">
+<path matrix="1 0 0 1 144 192" stroke="black">
 176 576 m
 240 576
 240 576 c
 </path>
-<path matrix="1 0 0 1 144 -32" stroke="black">
+<path matrix="1 0 0 1 144 192" stroke="black">
 176 512 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 144 -32" stroke="black">
+<path matrix="1 0 0 1 144 192" stroke="black">
 176 512 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 144 -32" stroke="black">
+<path matrix="1 0 0 1 144 192" stroke="black">
 176 576 m
 192 544
 192 544 c
 </path>
-<path matrix="1 0 0 1 144 -32" stroke="black">
+<path matrix="1 0 0 1 144 192" stroke="black">
 240 576 m
 224 544 l
 </path>
-<path matrix="1 0 0 1 144 -32" stroke="black">
+<path matrix="1 0 0 1 144 192" stroke="black">
 224 544 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 144 -32" stroke="black">
+<path matrix="1 0 0 1 144 192" stroke="black">
 160 544 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 144 -32" stroke="black">
+<path matrix="1 0 0 1 144 192" stroke="black">
 224 544 m
 256 544 l
 </path>
-<path matrix="1 0 0 1 240 -32" stroke="black">
+<path matrix="1 0 0 1 240 192" stroke="black">
 176 576 m
 240 576
 240 576 c
 </path>
-<path matrix="1 0 0 1 240 -32" stroke="black">
+<path matrix="1 0 0 1 240 192" stroke="black">
 176 512 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 240 -32" stroke="black">
+<path matrix="1 0 0 1 240 192" stroke="black">
 176 512 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 240 -32" stroke="black">
+<path matrix="1 0 0 1 240 192" stroke="black">
 176 576 m
 192 544
 192 544 c
 </path>
-<path matrix="1 0 0 1 240 -32" stroke="black">
+<path matrix="1 0 0 1 240 192" stroke="black">
 240 576 m
 224 544 l
 </path>
-<path matrix="1 0 0 1 240 -32" stroke="black">
+<path matrix="1 0 0 1 240 192" stroke="black">
 224 544 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 240 -32" stroke="black">
+<path matrix="1 0 0 1 240 192" stroke="black">
 160 544 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 240 -32" stroke="black">
+<path matrix="1 0 0 1 240 192" stroke="black">
 224 544 m
 256 544 l
 </path>
-<path matrix="1 0 0 1 336 -32" stroke="black">
+<path matrix="1 0 0 1 336 192" stroke="black">
 176 576 m
 240 576
 240 576 c
 </path>
-<path matrix="1 0 0 1 336 -32" stroke="black">
+<path matrix="1 0 0 1 336 192" stroke="black">
 176 512 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 336 -32" stroke="black">
+<path matrix="1 0 0 1 336 192" stroke="black">
 176 512 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 336 -32" stroke="black">
+<path matrix="1 0 0 1 336 192" stroke="black">
 176 576 m
 192 544
 192 544 c
 </path>
-<path matrix="1 0 0 1 336 -32" stroke="black">
+<path matrix="1 0 0 1 336 192" stroke="black">
 240 576 m
 224 544 l
 </path>
-<path matrix="1 0 0 1 336 -32" stroke="black">
+<path matrix="1 0 0 1 336 192" stroke="black">
 224 544 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 336 -32" stroke="black">
+<path matrix="1 0 0 1 336 192" stroke="black">
 160 544 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 336 -32" stroke="black">
+<path matrix="1 0 0 1 336 192" stroke="black">
 224 544 m
 256 544 l
 </path>
-<path matrix="1 0 0 1 144 -96" stroke="black">
+<path matrix="1 0 0 1 144 128" stroke="black">
 176 576 m
 240 576
 240 576 c
 </path>
-<path matrix="1 0 0 1 144 -96" stroke="black">
+<path matrix="1 0 0 1 144 128" stroke="black">
 176 512 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 144 -96" stroke="black">
+<path matrix="1 0 0 1 144 128" stroke="black">
 176 512 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 144 -96" stroke="black">
+<path matrix="1 0 0 1 144 128" stroke="black">
 176 576 m
 192 544
 192 544 c
 </path>
-<path matrix="1 0 0 1 144 -96" stroke="black">
+<path matrix="1 0 0 1 144 128" stroke="black">
 240 576 m
 224 544 l
 </path>
-<path matrix="1 0 0 1 144 -96" stroke="black">
+<path matrix="1 0 0 1 144 128" stroke="black">
 224 544 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 144 -96" stroke="black">
+<path matrix="1 0 0 1 144 128" stroke="black">
 160 544 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 144 -96" stroke="black">
+<path matrix="1 0 0 1 144 128" stroke="black">
 224 544 m
 256 544 l
 </path>
-<path matrix="1 0 0 1 240 -96" stroke="black">
+<path matrix="1 0 0 1 240 128" stroke="black">
 176 576 m
 240 576
 240 576 c
 </path>
-<path matrix="1 0 0 1 240 -96" stroke="black">
+<path matrix="1 0 0 1 240 128" stroke="black">
 176 512 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 240 -96" stroke="black">
+<path matrix="1 0 0 1 240 128" stroke="black">
 176 512 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 240 -96" stroke="black">
+<path matrix="1 0 0 1 240 128" stroke="black">
 176 576 m
 192 544
 192 544 c
 </path>
-<path matrix="1 0 0 1 240 -96" stroke="black">
+<path matrix="1 0 0 1 240 128" stroke="black">
 240 576 m
 224 544 l
 </path>
-<path matrix="1 0 0 1 240 -96" stroke="black">
+<path matrix="1 0 0 1 240 128" stroke="black">
 224 544 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 240 -96" stroke="black">
+<path matrix="1 0 0 1 240 128" stroke="black">
 160 544 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 240 -96" stroke="black">
+<path matrix="1 0 0 1 240 128" stroke="black">
 224 544 m
 256 544 l
 </path>
-<path matrix="1 0 0 1 336 -96" stroke="black">
+<path matrix="1 0 0 1 336 128" stroke="black">
 176 576 m
 240 576
 240 576 c
 </path>
-<path matrix="1 0 0 1 336 -96" stroke="black">
+<path matrix="1 0 0 1 336 128" stroke="black">
 176 512 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 336 -96" stroke="black">
+<path matrix="1 0 0 1 336 128" stroke="black">
 176 512 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 336 -96" stroke="black">
+<path matrix="1 0 0 1 336 128" stroke="black">
 176 576 m
 192 544
 192 544 c
 </path>
-<path matrix="1 0 0 1 336 -96" stroke="black">
+<path matrix="1 0 0 1 336 128" stroke="black">
 240 576 m
 224 544 l
 </path>
-<path matrix="1 0 0 1 336 -96" stroke="black">
+<path matrix="1 0 0 1 336 128" stroke="black">
 224 544 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 336 -96" stroke="black">
+<path matrix="1 0 0 1 336 128" stroke="black">
 160 544 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 336 -96" stroke="black">
+<path matrix="1 0 0 1 336 128" stroke="black">
 224 544 m
 256 544 l
 </path>
-<path matrix="1 0 0 1 144 -160" stroke="black">
+<path matrix="1 0 0 1 144 64" stroke="black">
 176 576 m
 240 576
 240 576 c
 </path>
-<path matrix="1 0 0 1 144 -160" stroke="black">
+<path matrix="1 0 0 1 144 64" stroke="black">
 176 512 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 144 -160" stroke="black">
+<path matrix="1 0 0 1 144 64" stroke="black">
 176 512 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 144 -160" stroke="black">
+<path matrix="1 0 0 1 144 64" stroke="black">
 176 576 m
 192 544
 192 544 c
 </path>
-<path matrix="1 0 0 1 144 -160" stroke="black">
+<path matrix="1 0 0 1 144 64" stroke="black">
 240 576 m
 224 544 l
 </path>
-<path matrix="1 0 0 1 144 -160" stroke="black">
+<path matrix="1 0 0 1 144 64" stroke="black">
 224 544 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 144 -160" stroke="black">
+<path matrix="1 0 0 1 144 64" stroke="black">
 160 544 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 144 -160" stroke="black">
+<path matrix="1 0 0 1 144 64" stroke="black">
 224 544 m
 256 544 l
 </path>
-<path matrix="1 0 0 1 240 -160" stroke="black">
+<path matrix="1 0 0 1 240 64" stroke="black">
 176 576 m
 240 576
 240 576 c
 </path>
-<path matrix="1 0 0 1 240 -160" stroke="black">
+<path matrix="1 0 0 1 240 64" stroke="black">
 176 512 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 240 -160" stroke="black">
+<path matrix="1 0 0 1 240 64" stroke="black">
 176 512 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 240 -160" stroke="black">
+<path matrix="1 0 0 1 240 64" stroke="black">
 176 576 m
 192 544
 192 544 c
 </path>
-<path matrix="1 0 0 1 240 -160" stroke="black">
+<path matrix="1 0 0 1 240 64" stroke="black">
 240 576 m
 224 544 l
 </path>
-<path matrix="1 0 0 1 240 -160" stroke="black">
+<path matrix="1 0 0 1 240 64" stroke="black">
 224 544 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 240 -160" stroke="black">
+<path matrix="1 0 0 1 240 64" stroke="black">
 160 544 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 240 -160" stroke="black">
+<path matrix="1 0 0 1 240 64" stroke="black">
 224 544 m
 256 544 l
 </path>
-<path matrix="1 0 0 1 336 -160" stroke="black">
+<path matrix="1 0 0 1 336 64" stroke="black">
 176 576 m
 240 576
 240 576 c
 </path>
-<path matrix="1 0 0 1 336 -160" stroke="black">
+<path matrix="1 0 0 1 336 64" stroke="black">
 176 512 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 336 -160" stroke="black">
+<path matrix="1 0 0 1 336 64" stroke="black">
 176 512 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 336 -160" stroke="black">
+<path matrix="1 0 0 1 336 64" stroke="black">
 176 576 m
 192 544
 192 544 c
 </path>
-<path matrix="1 0 0 1 336 -160" stroke="black">
+<path matrix="1 0 0 1 336 64" stroke="black">
 240 576 m
 224 544 l
 </path>
-<path matrix="1 0 0 1 336 -160" stroke="black">
+<path matrix="1 0 0 1 336 64" stroke="black">
 224 544 m
 240 512 l
 </path>
-<path matrix="1 0 0 1 336 -160" stroke="black">
+<path matrix="1 0 0 1 336 64" stroke="black">
 160 544 m
 192 544 l
 </path>
-<path matrix="1 0 0 1 336 -160" stroke="black">
+<path matrix="1 0 0 1 336 64" stroke="black">
 224 544 m
 256 544 l
 </path>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="176 576" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="240 576" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="224 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="256 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="240 512" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="176 512" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="192 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="160 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="304 576" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="288 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="320 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="304 512" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="368 512" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="352 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="368 576" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="400 576" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="464 576" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="496 576" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="560 576" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="416 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="448 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="400 512" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="464 512" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="496 512" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="560 512" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="544 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="512 544" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="288 480" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="288 416" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="304 384" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="368 384" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="400 384" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="464 384" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="496 384" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="560 384" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="576 416" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="576 480" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="560 448" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="544 416" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="544 480" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="512 480" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="448 480" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="416 480" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="352 480" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="320 480" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="304 448" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="368 448" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="400 448" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="464 448" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="496 448" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="512 416" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="448 416" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="416 416" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="352 416" size="large" stroke="black" fill="white"/>
-<use matrix="1 0 0 1 16 -32" name="mark/fdisk(sfx)" pos="320 416" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="176 576" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="240 576" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="224 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="256 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="240 512" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="176 512" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="192 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="160 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="304 576" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="288 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="320 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="304 512" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="368 512" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="352 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="368 576" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="400 576" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="464 576" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="496 576" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="560 576" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="416 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="448 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="400 512" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="464 512" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="496 512" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="560 512" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="544 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="512 544" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="288 480" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="288 416" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="304 384" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="368 384" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="400 384" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="464 384" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="496 384" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="560 384" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="576 416" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="576 480" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="560 448" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="544 416" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="544 480" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="512 480" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="448 480" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="416 480" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="352 480" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="320 480" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="304 448" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="368 448" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="400 448" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="464 448" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="496 448" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="512 416" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="448 416" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="416 416" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="352 416" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 192" name="mark/fdisk(sfx)" pos="320 416" size="large" stroke="black" fill="white"/>
 <text matrix="1 0 0 1 -48 32" transformations="translations" pos="80 768" stroke="black" type="label" width="121.622" height="9.963" depth="0" valign="baseline" size="Large">Elemental structure</text>
 <text matrix="1 0 0 1 -16 -16" transformations="translations" pos="208 816" stroke="black" type="label" width="52.672" height="9.963" depth="0" valign="baseline" size="Large">Unit cell</text>
 <text matrix="1 0 0 1 -16 -16" transformations="translations" pos="352 816" stroke="black" type="label" width="82.327" height="9.963" depth="0" valign="baseline" size="Large">Metamaterial</text>
-<use matrix="1 0 0 1 16 32" name="mark/fdisk(sfx)" pos="576 480" size="large" stroke="black" fill="white"/>
+<use matrix="1 0 0 1 16 256" name="mark/fdisk(sfx)" pos="576 480" size="large" stroke="black" fill="white"/>
 <text matrix="1 0 0 1 -16 0" transformations="translations" pos="64 768" stroke="black" type="label" width="23.523" height="6.918" depth="0" valign="baseline">beam</text>
 </page>
 </ipe>
