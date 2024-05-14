@@ -49,7 +49,7 @@ def test_dU_2D_xy(positions_ic, i_p ,j_p, epsilon=0.001):
     beam = rb.Beam(c_p, i_p, j_p)
     beam_lengths_p = rb.getBeamLength(positions_ic, i_p, j_p)
 
-    du_ic = beam.dUBeam(positions_ic, beam_lengths_p)
+    du_ic = beam.getGradientBeam(positions_ic, beam_lengths_p)
 
     for i in range(nb_hinges):
         for d in range(nb_dims):

@@ -56,7 +56,7 @@ def test_dU_xy(positions_ic, i_t, j_t, k_t, epsilon=0.001):
 
     angle = rb.Angle(c_t, i_t, j_t, k_t)
     # u = rb.UAngle(cos_t, cos0_t, c_t)
-    du_ic = angle.dUAngle(positions_ic, cos_t, cos0_t)
+    du_ic = angle.getGradientAngle(positions_ic, cos_t, cos0_t)
 
     for i in range(nb_hinges):
         for d in range(nb_dims):

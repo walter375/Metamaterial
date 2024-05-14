@@ -52,7 +52,7 @@ def test_dU(positions_ic, i_t, j_t, k_t, epsilon=0.001):
     beamlengths0kj_t = rb.getBeamLength(positions_ic, k_t, j_t)
     beamlengths0ik_t = rb.getBeamLength(positions_ic, i_t, k_t)
 
-    du_ic = triplet.dUTriplet(positions_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t)
+    du_ic = triplet.getGradientUTriplet(positions_ic, beamlengths0ij_t, beamlengths0kj_t, beamlengths0ik_t)
 
     for i in range(nb_hinges):
         for d in range(nb_dims):
