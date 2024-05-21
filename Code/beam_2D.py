@@ -46,14 +46,30 @@ class Beam:
         rijHat_pc = (rij_pc.T / rij_p).T
         # hessian has dimension 2*nb_positions x 2*nb_positions (2 because 2D)
         ddU_pcc = np.empty((len(r_ic), 2, 2))
+        H_pcc = np.empty((len(r_ic), 2, 2))
+        dde_pc = (((1-rij_pc).T/rij_p).T + (rijHat_pc))
+        Hdiag_icc = np.empty((len(r_ic), 2, 2))
+        for n in range (len(r_ic)):
+            H_pcc[n, n, 0] = np.eye(2) * dde_pc[n]
+        for m in range (len(r_ic)):
+            H_pcc[:, m, 1] = np.eye(2) * dde_pc[m]
+        print(H_pcc)
+        # for i in range(2):
+        #     for j in range(2):
+        #         H_pcc[:, i, j] = np.eye(2) * dde_pc[]
+        #         Hdiag_pcc[:, i, j] = np.bincount(i_p, weights=np.eye(2)*dde_pc[])
 
-        partFunction = (((1-rij_pc).T/rij_p).T + (rijHat_pc))
-        delta1partFunction = nt.mabincount(self.i_p, partFunction, len(r_ic), axis=0)
-        delta1partFunction -= nt.mabincount(self.j_p, partFunction, len(r_ic), axis=0)
-        print(delta1partFunction.shape)
-        delta2partFunction = nt.mabincount(self.i_p, delta1partFunction, len(r_ic), axis=0)
-        delta2partFunction -= nt.mabincount(self.j_p, delta1partFunction, len(r_ic), axis=0)
-        print(delta2partFunction.shape)
+        print("dde_p",dde_pc.shape, "H_pcc", H_pcc.shape)
+
+        # for x_c in range(2):
+        #     for y_c in range(2):
+        #         Hdiag_icc[:, x_c, y_c] =
+        # delta1partFunction = nt.mabincount(self.i_p, dde_p, len(r_ic), axis=0)
+        # delta1partFunction -= nt.mabincount(self.j_p, dde_p, len(r_ic), axis=0)
+        # print(delta1partFunction.shape)
+        # delta2partFunction = nt.mabincount(self.i_p, delta1partFunction, len(r_ic), axis=0)
+        # delta2partFunction -= nt.mabincount(self.j_p, delta1partFunction, len(r_ic), axis=0)
+        # print(delta2partFunction.shape)
 
         ddU_pcc = np.dot(delta2partFunction.T, np.identity(len(r_ic)))
         print(delta2partFunction.shape, ddU_pcc.shape)
