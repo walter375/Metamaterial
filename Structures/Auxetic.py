@@ -1,5 +1,5 @@
 import numpy as np
-r_orig_ic = np.array([[0.5, 0], [2.25, 0], [0.5,1], [1.25,1], [1.5,1], [2.25,1], [0.5, 2], [2.25, 2]], dtype=float)  # shape=(nb_hinges, 2)
+r_orig_ic = np.array([[0.5, 0], [2.25, 0], [0.5,1], [1.25,1], [1.5,1], [2.25,1], [0.5, 2], [2.25, 2]], dtype=float)  # shape=(nb_positions, 2)
 diff = np.zeros_like(r_orig_ic)
 diff[5,0] += 0.5
 diff[2,0] -= 0.5

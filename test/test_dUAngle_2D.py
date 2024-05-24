@@ -43,7 +43,7 @@ def test_getCosAngle():
     ([[0.3, 0.1], [1, -0.1], [1.2, 1]], [0, 2], [1, 0], [2, 1]),
     ])
 def test_dU_xy(positions_ic, i_t, j_t, k_t, epsilon=0.001):
-    positions_ic = np.array(positions_ic, dtype=float)  # shape=(nb_hinges, 2)
+    positions_ic = np.array(positions_ic, dtype=float)  # shape=(nb_positions, 2)
     nb_hinges, nb_dims = positions_ic.shape
     i_t = np.array(i_t)
     j_t = np.array(j_t)

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 """  
 suffix:
-        _i: position length
+        _i: number of positions length
         _p: pair length
         _t: triplet length
         _c: cartesian (2D, x & y)
@@ -36,43 +36,46 @@ class Beam:
         rij_p = np.linalg.norm(rij_pc, axis=1)
         rijHat_pc = (rij_pc.T / rij_p).T
 
-        dU_p = nt.mabincount(self.i_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, len(r_ic), axis=0)
-        dU_p -= nt.mabincount(self.j_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, len(r_ic), axis=0)
-        return dU_p
+        dU_ic = nt.mabincount(self.i_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, nb_positions, axis=0)
+        dU_ic -= nt.mabincount(self.j_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, nb_positions, axis=0)
+        return dU_ic
 
     def getHessianBeam(self, r_ic, beamlengths_p):
         rij_pc = r_ic[self.i_p] - r_ic[self.j_p]
         rij_p = np.linalg.norm(rij_pc, axis=1)
         rijHat_pc = (rij_pc.T / rij_p).T
         # hessian has dimension 2*nb_positions x 2*nb_positions (2 because 2D)
-        ddU_pcc = np.empty((len(r_ic), 2, 2))
-        H_pcc = np.empty((len(r_ic), 2, 2))
-        dde_pc = (((1-rij_pc).T/rij_p).T + (rijHat_pc))
-        Hdiag_icc = np.empty((len(r_ic), 2, 2))
-        for n in range (len(r_ic)):
-            H_pcc[n, n, 0] = np.eye(2) * dde_pc[n]
-        for m in range (len(r_ic)):
-            H_pcc[:, m, 1] = np.eye(2) * dde_pc[m]
-        print(H_pcc)
-        # for i in range(2):
-        #     for j in range(2):
-        #         H_pcc[:, i, j] = np.eye(2) * dde_pc[]
-        #         Hdiag_pcc[:, i, j] = np.bincount(i_p, weights=np.eye(2)*dde_pc[])
+        # second derivative function for deriving twice in the same coordinate x or y
+        ddU1_ic = nt.mabincount(self.i_p, (self.c_p * (1 * ((1 - rij_pc).T / rij_p).T + rijHat_pc).T).T, nb_positions, axis=0)
+        ddU1_ic -= nt.mabincount(self.j_p, (self.c_p * (1 * ((1 - rij_pc).T / rij_p).T + rijHat_pc).T).T, nb_positions, axis=0)
+        #print(ddU1_ic)
+        # second derivative function for deriving first in x(y) and then in y(x)
+        ddU2_ic = nt.mabincount(self.i_p, (self.c_p * (1*((1-rij_pc).T/rij_p).T).T).T, nb_positions, axis=0)
+        ddU2_ic -= nt.mabincount(self.j_p, (self.c_p * (1*((1-rij_pc).T/rij_p).T).T).T, nb_positions, axis=0)
+        #print(ddU2_ic)
+        # global hessian, 2*nb_positions x 2*nb_positions
+        HGlobal_2i2i = np.zeros([nb_positions*2, nb_positions*2])
+        # print(HGlobal_2i2i)
+        # local beam hessians, each 2x2, combined 4x4
+        HLocal = np.zeros_like([2, 2])
+        for m in range(nb_bodies):
+            globalIndexIx = i_p[m]
+            globalIndexJx = j_p[m]
+            globalIndexIy = i_p[m] + nb_positions
+            globalIndexJy = j_p[m] + nb_positions
+            HLocalXx = np.ones([2,2]) * ddU1_ic[globalIndexIx,0]
+            HLocalYy = np.ones([2,2]) * ddU1_ic[globalIndexIx,1]
+            HLocalXy = np.ones([2,2]) * ddU2_ic[globalIndexIx,0]
 
-        print("dde_p",dde_pc.shape, "H_pcc", H_pcc.shape)
+            print(HLocalXx,"\n", HLocalXy, "\n", HLocalYy, "\n")
+            print(i_p[m])
 
-        # for x_c in range(2):
-        #     for y_c in range(2):
-        #         Hdiag_icc[:, x_c, y_c] =
-        # delta1partFunction = nt.mabincount(self.i_p, dde_p, len(r_ic), axis=0)
-        # delta1partFunction -= nt.mabincount(self.j_p, dde_p, len(r_ic), axis=0)
-        # print(delta1partFunction.shape)
-        # delta2partFunction = nt.mabincount(self.i_p, delta1partFunction, len(r_ic), axis=0)
-        # delta2partFunction -= nt.mabincount(self.j_p, delta1partFunction, len(r_ic), axis=0)
-        # print(delta2partFunction.shape)
+            HGlobal_2i2i[globalIndexIx:globalIndexIx+2, globalIndexIx:globalIndexIx+2] += HLocalXx
+            HGlobal_2i2i[globalIndexIx:globalIndexIx+2, globalIndexIy:globalIndexIy+2] += HLocalXx
+            HGlobal_2i2i[globalIndexIy:globalIndexIy+2, globalIndexIx:globalIndexIx+2] += HLocalXx
+            HGlobal_2i2i[globalIndexIy:globalIndexIy+2, globalIndexIy:globalIndexIy+2] += HLocalYy
 
-        ddU_pcc = np.dot(delta2partFunction.T, np.identity(len(r_ic)))
-        print(delta2partFunction.shape, ddU_pcc.shape)
+            print(HGlobal_2i2i)
         return 0
     def UBeamObjective(self, ric_flat, beamlengths_p):
         r_ic = ricUnflat(ric_flat, r_stressed_ic, border, x, y)
@@ -86,8 +89,8 @@ class Beam:
         rij_p = np.linalg.norm(rij_pc, axis=1)
         rijHat_pc = (rij_pc.T / rij_p).T
 
-        dU_p = nt.mabincount(self.i_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, len(r_ic), axis=0)
-        dU_p -= nt.mabincount(self.j_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, len(r_ic), axis=0)
+        dU_p = nt.mabincount(self.i_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, nb_positions, axis=0)
+        dU_p -= nt.mabincount(self.j_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, nb_positions, axis=0)
         dU_p_flat = ricFlat(dU_p, border, x, y)
         return dU_p_flat
 
@@ -217,27 +220,27 @@ class Triplet:
 
         dU_tc = nt.mabincount(self.i_t,
                               (cij_t * ((rij_t - beamlengths0ij_t)) * rijHat_tc.T),
-                              len(r_ic),
+                              nb_positions,
                               axis=1)
         dU_tc += nt.mabincount(self.j_t,
                                (cij_t * ((rij_t - beamlengths0ij_t)) * rijHat_tc.T),
-                               len(r_ic),
+                               nb_positions,
                                axis=1)
         dU_tc -= nt.mabincount(self.k_t,
                                (ckj_t * ((rkj_t - beamlengths0kj_t)) * rkjHat_tc.T),
-                               len(r_ic),
+                               nb_positions,
                                axis=1)
         dU_tc += nt.mabincount(self.j_t,
                                (ckj_t * ((rkj_t - beamlengths0kj_t)) * rkjHat_tc.T),
-                               len(r_ic),
+                               nb_positions,
                                axis=1)
         dU_tc -= nt.mabincount(self.k_t,
                                (cik_t * ((rik_t - beamlengths0ik_t)) * rikHat_tc.T),
-                               len(r_ic),
+                               nb_positions,
                                axis=1)
         dU_tc += nt.mabincount(self.i_t,
                                (cik_t * ((rik_t - beamlengths0ik_t)) * rikHat_tc.T),
-                               len(r_ic),
+                               nb_positions,
                                axis=1)
 
         return dU_tc.T
@@ -282,27 +285,27 @@ class Triplet:
 
         dU_tc = nt.mabincount(self.i_t,
                               (cij_t * ((rij_t - beamlengths0ij_t)) * rijHat_tc.T),
-                              len(r_ic),
+                              nb_positions,
                               axis=1)
         dU_tc += nt.mabincount(self.j_t,
                                (cij_t * ((rij_t - beamlengths0ij_t)) * rijHat_tc.T),
-                               len(r_ic),
+                               nb_positions,
                                axis=1)
         dU_tc -= nt.mabincount(self.k_t,
                                (ckj_t * ((rkj_t - beamlengths0kj_t)) * rkjHat_tc.T),
-                               len(r_ic),
+                               nb_positions,
                                axis=1)
         dU_tc += nt.mabincount(self.j_t,
                                (ckj_t * ((rkj_t - beamlengths0kj_t)) * rkjHat_tc.T),
-                               len(r_ic),
+                               nb_positions,
                                axis=1)
         dU_tc -= nt.mabincount(self.k_t,
                                (cik_t * ((rik_t - beamlengths0ik_t)) * rikHat_tc.T),
-                               len(r_ic),
+                               nb_positions,
                                axis=1)
         dU_tc += nt.mabincount(self.i_t,
                                (cik_t * ((rik_t - beamlengths0ik_t)) * rikHat_tc.T),
-                               len(r_ic),
+                               nb_positions,
                                axis=1)
         dU_tc_flat = ricFlat(dU_tc.T, border, x, y)
         return dU_tc_flat
@@ -458,8 +461,9 @@ if __name__ == "__main__":
     i_t = s1.i_t
     j_t = s1.j_t
     k_t = s1.k_t
+
     nb_bodies = i_p.shape[0]
-    nb_hinges = r_orig_ic.shape[0]
+    nb_positions = r_orig_ic.shape[0]
     nb_angles = i_t.shape[0]
     # modifications
     x = 1
@@ -470,34 +474,36 @@ if __name__ == "__main__":
     beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
     c_p = np.ones(nb_bodies)
     beam = Beam(c_p, i_p, j_p)
+    beam.getGradientBeam(r_orig_ic, beamlengths_p)
+    beam.getHessianBeam(r_orig_ic, beamlengths_p)
     # beam.UBeam(r_stressed_ic, beamlengths_p)
     # beam.dUBeam(r_stressed_ic, beamlengths_p)
     ''' angles '''
-    c_t = np.ones(nb_angles)
-    angle = Angle(c_t, i_t, j_t, k_t)
-    cos0_t = getCosAngles(r_orig_ic, i_t, j_t, k_t)
-    cosijk_t = getCosAngles(r_stressed_ic, i_t, j_t, k_t)
-    ''' beam angle combination '''
-    ba = BeamAngle(beam, angle)
-
-    border = getBorderPoints(r_stressed_ic, left, right)
-    ric_flat = ricFlat(r_stressed_ic,border, x, y)
-    p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
-    cons = [{'type': 'eq', 'fun': conLen}]
-    p2 = runOptimizer(angle.UAngleObjective, ric_flat, cos0_t, cons=cons, gradient=angle.gradientUAngleObjective)
-    stiffness_angle1 = 10
-    stiffness_beam1 = 10
-    angle.c_t = np.full(nb_angles, stiffness_angle1)
-    beam.c_p = np.full(nb_bodies, stiffness_beam1)
-    p3 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
-    stiffness_angle2 = 5
-    stiffness_beam2 = 200
-    angle.c_t = np.full(nb_angles, stiffness_angle2)
-    beam.c_p = np.full(nb_bodies, stiffness_beam2)
-    p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
+    # c_t = np.ones(nb_angles)
+    # angle = Angle(c_t, i_t, j_t, k_t)
+    # cos0_t = getCosAngles(r_orig_ic, i_t, j_t, k_t)
+    # cosijk_t = getCosAngles(r_stressed_ic, i_t, j_t, k_t)
+    # ''' beam angle combination '''
+    # ba = BeamAngle(beam, angle)
+    #
+    # border = getBorderPoints(r_stressed_ic, left, right)
+    # ric_flat = ricFlat(r_stressed_ic,border, x, y)
+    # p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
+    # cons = [{'type': 'eq', 'fun': conLen}]
+    # p2 = runOptimizer(angle.UAngleObjective, ric_flat, cos0_t, cons=cons, gradient=angle.gradientUAngleObjective)
+    # stiffness_angle1 = 10
+    # stiffness_beam1 = 10
+    # angle.c_t = np.full(nb_angles, stiffness_angle1)
+    # beam.c_p = np.full(nb_bodies, stiffness_beam1)
+    # p3 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
+    # stiffness_angle2 = 5
+    # stiffness_beam2 = 200
+    # angle.c_t = np.full(nb_angles, stiffness_angle2)
+    # beam.c_p = np.full(nb_bodies, stiffness_beam2)
+    # p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
     # plotResults(p1, p2, p3, p4)
 
-    beam.getHessianBeam(r_orig_ic, beamlengths_p)
+
 
 
     from Structures import structure2 as s2
@@ -509,7 +515,7 @@ if __name__ == "__main__":
     # j_t = s2.j_t
     # k_t = s2.k_t
     # nb_bodies = i_p.shape[0]
-    # nb_hinges = r_orig_ic.shape[0]
+    # nb_positions = r_orig_ic.shape[0]
     # nb_angles = i_t.shape[0]
     # # modifications
     # x = 1
@@ -557,7 +563,7 @@ if __name__ == "__main__":
     # j_t = s3.j_t
     # k_t = s3.k_t
     # nb_bodies = i_p.shape[0]
-    # nb_hinges = r_orig_ic.shape[0]
+    # nb_positions = r_orig_ic.shape[0]
     # nb_triplets = i_t.shape[0]
     # nb_angles = i_a_t.shape[0]
     # # modifications
@@ -609,7 +615,7 @@ if __name__ == "__main__":
     # j_t = im.j_t
     # k_t = im.k_t
     # nb_bodies = i_p.shape[0]
-    # nb_hinges = r_orig_ic.shape[0]
+    # nb_positions = r_orig_ic.shape[0]
     # nb_angles = i_t.shape[0]
     # # constrains
     # x = 1
@@ -655,7 +661,7 @@ if __name__ == "__main__":
     # j_t = g.j_t
     # k_t = g.k_t
     # nb_bodies = i_p.shape[0]
-    # nb_hinges = r_orig_ic.shape[0]
+    # nb_positions = r_orig_ic.shape[0]
     # nb_angles = i_t.shape[0]
     # # constrains
     # x = 1
@@ -708,7 +714,7 @@ if __name__ == "__main__":
     # j_t = g.j_t
     # k_t = g.k_t
     # nb_bodies = i_p.shape[0]
-    # nb_hinges = r_orig_ic.shape[0]
+    # nb_positions = r_orig_ic.shape[0]
     # nb_angles = i_t.shape[0]
     # # constrains
     # x = 1
@@ -754,7 +760,7 @@ if __name__ == "__main__":
     # j_t = g.j_t
     # k_t = g.k_t
     # nb_bodies = i_p.shape[0]
-    # nb_hinges = r_orig_ic.shape[0]
+    # nb_positions = r_orig_ic.shape[0]
     # nb_angles = i_t.shape[0]
     # # constrains
     # x = 1

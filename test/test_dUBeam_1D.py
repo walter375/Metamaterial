@@ -37,7 +37,7 @@ def test_dU_1D():
     epsilon = 0.01
 
     k_n = np.ones(nb_bodies)
-    beam_lengths_n = rb.getBeamLength_1D(positions_initial_ic) #shape(nb_hinges -1,)
+    beam_lengths_n = rb.getBeamLength_1D(positions_initial_ic) #shape(nb_positions -1,)
 
     du_pulled = np.zeros([nb_hinges])
     du_epsilon = np.zeros([nb_hinges])

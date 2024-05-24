@@ -1,6 +1,6 @@
 import numpy as np
 
-r_orig_ic = np.array([[0, 0], [1, 0], [0.75, 0.5], [0.01,1], [2,1], [2.25,1], [0.75, 1.5], [0, 2], [1, 2]], dtype=float)  # shape=(nb_hinges, 2)
+r_orig_ic = np.array([[0, 0], [1, 0], [0.75, 0.5], [0.01,1], [2,1], [2.25,1], [0.75, 1.5], [0, 2], [1, 2]], dtype=float)  # shape=(nb_positions, 2)
 diff = np.zeros_like(r_orig_ic)
 diff[3,0] += 0.3
 r_stressed_ic = r_orig_ic + diff

@@ -40,7 +40,7 @@ def get_hessian(self, atoms, format="sparse", divide_by_masses=False):
     de_p = np.zeros_like(r_p)
     dde_p = np.zeros_like(r_p)
 
-    for mask, pair in self._mask_pairs(i_p, j_p):
+    for mask, pair in self.a(i_p, j_p):
         e_p[mask] = f[pair](r_p[mask], qi_p[mask], qj_p[mask])
         de_p[mask] = df[pair](r_p[mask], qi_p[mask], qj_p[mask])
         dde_p[mask] = df2[pair](r_p[mask], qi_p[mask], qj_p[mask])

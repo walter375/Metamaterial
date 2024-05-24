@@ -34,6 +34,8 @@ def dU_1D(positions_ic, beam_lengths_n, k_n):
             dU[i] = k_n[i-1]*(positions_ic[i] - positions_ic[i-1] - beam_lengths_n[i-1]) \
                     - k_n[i]*(positions_ic[i+1] - positions_ic[i] - beam_lengths_n[i])
     return dU
+
+def ddU_1D()
 def getBeamLength_1D(positions_i):
     beam_lengths_n = np.diff(positions_i)
     return beam_lengths_n
@@ -63,7 +65,7 @@ if __name__ == "__main__":
     start = positions_initial_i[0]
     end = positions_final_i[-1]
 
-    #positions_ic_flat = positions_ic.reshape(nb_hinges*2)
+    #positions_ic_flat = positions_ic.reshape(nb_positions*2)
     beam_lengths_n = getBeamLength_1D(positions_initial_i)
     print("u1: ", U_1D(positions_initial_i, beam_lengths_n, k_n))
     print("u2: ", U_1D(positions_final_i, beam_lengths_n, k_n))

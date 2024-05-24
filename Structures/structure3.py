@@ -10,7 +10,7 @@ import numpy as np
 
 # positions
 r_orig_ic = np.array([[0, 2], [1, 2], [2, 2], [3, 2], [0.5, 1], [1.5, 1], [2.5, 1], [0, 0], [1, 0], [2, 0], [3, 0]],
-                     dtype=float)  # shape=(nb_hinges, 2)
+                     dtype=float)  # shape=(nb_positions, 2)
 diff = np.zeros_like(r_orig_ic)
 diff[3, 0] += 1
 diff[10, 0] += 1
