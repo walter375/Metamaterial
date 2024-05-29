@@ -48,22 +48,22 @@ class Beam:
         # second derivative function for deriving twice in the same coordinate x or y
         ddU1_ic = nt.mabincount(self.i_p, (self.c_p * (1 * ((1 - rij_pc).T / rij_p).T + rijHat_pc).T).T, nb_positions, axis=0)
         ddU1_ic -= nt.mabincount(self.j_p, (self.c_p * (1 * ((1 - rij_pc).T / rij_p).T + rijHat_pc).T).T, nb_positions, axis=0)
-        # print(ddU1_ic)
+        print(ddU1_ic)
         # second derivative function for deriving first in x(y) and then in y(x)
         ddU2_ic = nt.mabincount(self.i_p, (self.c_p * (1*((1-rij_pc).T/rij_p).T).T).T, nb_positions, axis=0)
         ddU2_ic -= nt.mabincount(self.j_p, (self.c_p * (1*((1-rij_pc).T/rij_p).T).T).T, nb_positions, axis=0)
-        # print(ddU2_ic)
+        print(ddU2_ic)
 
         # global hessian, 2*nb_positions x 2*nb_positions
         HGlobal_2i2i = np.zeros([nb_positions*2, nb_positions*2])
 
-        # local beam hessians (4x4)
-        HLocal = np.zeros(4,4)
         # mask for derivatives derived in dxdx or dydy
         maskLocal1 = np.eye(4) + np.eye(4, k=2) + np.eye(4, k=-2)
         # mask for derivatives derived twice in dxdy or dydx
         maskLocal2 = np.eye(4, k=1) + np.eye(4, k=-1) + np.eye(4, k=3) + np.eye(4, k=-3)
         for m in range(nb_bodies):
+            # local beam hessians (4x4)
+            HLocal = np.zeros((4, 4))
             # indicies for global hessian
             globalIndexI = np.stack((i_p, j_p), axis=1) * 2
             globalIndexJ = globalIndexI + 1
@@ -73,6 +73,7 @@ class Beam:
             # indicies for local hessian
             localIndexI = np.stack((i_p, j_p), axis=1)
             ixLocal = np.ix_(localIndexI[m], [0,1])
+            print(ixLocal, ddU1_ic[ixLocal].flatten())
 
             HLocal += ddU1_ic[ixLocal].flatten() * maskLocal1
             HLocal += ddU2_ic[ixLocal].flatten() * maskLocal2
