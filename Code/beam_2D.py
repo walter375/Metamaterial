@@ -56,37 +56,31 @@ class Beam:
 
         # global hessian, 2*nb_positions x 2*nb_positions
         HGlobal_2i2i = np.zeros([nb_positions*2, nb_positions*2])
-        print(HGlobal_2i2i)
 
-        # local beam hessians, each 2x2, combined 4x4
-        HLocal = np.zeros([4,4])
-        maskLocal = np.eye(4) + np.eye(4, k=2) + np.eye(4, k=-2)
-        print(maskLocal)
-
+        # local beam hessians (4x4)
+        HLocal = np.zeros(4,4)
+        # mask for derivatives derived in dxdx or dydy
+        maskLocal1 = np.eye(4) + np.eye(4, k=2) + np.eye(4, k=-2)
+        # mask for derivatives derived twice in dxdy or dydx
+        maskLocal2 = np.eye(4, k=1) + np.eye(4, k=-1) + np.eye(4, k=3) + np.eye(4, k=-3)
         for m in range(nb_bodies):
+            # indicies for global hessian
             globalIndexI = np.stack((i_p, j_p), axis=1) * 2
             globalIndexJ = globalIndexI + 1
             globalIndex = np.stack((globalIndexI, globalIndexJ), axis=1)
-            # print(globalIndex[m].flatten())
+            ix = np.sort(globalIndex[m].flatten())
+            ixGlobal = np.ix_(ix, ix)
+            # indicies for local hessian
             localIndexI = np.stack((i_p, j_p), axis=1)
-#             print(localIndexI)
             ixLocal = np.ix_(localIndexI[m], [0,1])
-#             print(ixLocal)
-            ixGlobal = np.ix_(globalIndex[m].flatten(),globalIndexI[m].flatten())
-            HGlobal_2i2i[ixGlobal] = 1
-            print(HGlobal_2i2i)
-            # print(ddU1_ic[ixgrid])
-            #HLocal = np.matmul(np.ones([4,4]), ddU2_ic[globalIndexI[m:m+1],globalIndexJ[m:m+1]]).flatten('F')
-            # print("HLocal: ",HLocal, "\n", "i_p:", i_p[m], "\n", "j_p:", j_p[m]) #ddU2_ic[i_p[m]])
 
-            HLocal = ddU1_ic[ixLocal].flatten() * maskLocal
-            # print("HLocal: ", HLocal)
-            # HGlobal_2i2i[] += HLocalXx
-            # HGlobal_2i2i[globalIndexIx:globalIndexIx+2, globalIndexIy:globalIndexIy+2] += HLocalXx
-            # HGlobal_2i2i[globalIndexIy:globalIndexIy+2, globalIndexIx:globalIndexIx+2] += HLocalXx
-            # HGlobal_2i2i[globalIndexIy:globalIndexIy+2, globalIndexIy:globalIndexIy+2] += HLocalYy
+            HLocal += ddU1_ic[ixLocal].flatten() * maskLocal1
+            HLocal += ddU2_ic[ixLocal].flatten() * maskLocal2
+            print("HLocal:\n", HLocal)
+            HGlobal_2i2i[ixGlobal] += HLocal
+            print("HGlobal_2i2i:\n", HGlobal_2i2i)
 
-        return 0
+        return HGlobal_2i2i
     def UBeamObjective(self, ric_flat, beamlengths_p):
         r_ic = ricUnflat(ric_flat, r_stressed_ic, border, x, y)
         rij_pc = r_ic[self.j_p] - r_ic[self.i_p]  # vector rij
