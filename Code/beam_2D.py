@@ -41,14 +41,14 @@ class Beam:
         return dU_ic
 
     def getHessianBeam(self, r_ic, beamlengths_p):
-        rij_pc = r_ic[self.i_p] - r_ic[self.j_p]
-        rij_p = np.linalg.norm(rij_pc, axis=1)
-        rijHat_pc = (rij_pc.T / rij_p).T
-        # hessian has dimension 2*nb_positions x 2*nb_positions (2 because 2D)
+        rij_pc = r_ic[self.i_p] - r_ic[self.j_p]  # vector rij
+        rij_p = np.linalg.norm(rij_pc, axis=1)  # length rij
+        rijHat_pc = (rij_pc.T / rij_p).T  # normalized vector rij
+        print(np.einsum('ij,kj->ij', rijHat_pc, rijHat_pc))
         # second derivative function for deriving twice in the same coordinate x or y
-        ddU1_ic = nt.mabincount(self.i_p, (self.c_p * (1 * ((1 - rij_pc).T / rij_p).T + rijHat_pc).T).T, nb_positions, axis=0)
-        ddU1_ic -= nt.mabincount(self.j_p, (self.c_p * (1 * ((1 - rij_pc).T / rij_p).T + rijHat_pc).T).T, nb_positions, axis=0)
-        print(ddU1_ic)
+        ddU1_i = nt.mabincount(self.i_p, (self.c_p * (1 - ((rij_p - beamlengths_p) / rij_p) + ((rij_p - beamlengths_p)/rij_p))), nb_positions, axis=0)
+        ddU1_i += nt.mabincount(self.j_p, (self.c_p * (1 - ((rij_p - beamlengths_p) / rij_p) + ((rij_p - beamlengths_p)/rij_p))), nb_positions, axis=0)
+        print("ddU1:", ddU1_i)
         # second derivative function for deriving first in x(y) and then in y(x)
         ddU2_ic = nt.mabincount(self.i_p, (self.c_p * (1*((1-rij_pc).T/rij_p).T).T).T, nb_positions, axis=0)
         ddU2_ic -= nt.mabincount(self.j_p, (self.c_p * (1*((1-rij_pc).T/rij_p).T).T).T, nb_positions, axis=0)
@@ -73,9 +73,9 @@ class Beam:
             # indicies for local hessian
             localIndexI = np.stack((i_p, j_p), axis=1)
             ixLocal = np.ix_(localIndexI[m], [0,1])
-            print(ixLocal, ddU1_ic[ixLocal].flatten())
+            print(ixLocal, ddU1_i[ixLocal].flatten())
 
-            HLocal += ddU1_ic[ixLocal].flatten() * maskLocal1
+            HLocal += ddU1_i[ixLocal].flatten() * maskLocal1
             HLocal += ddU2_ic[ixLocal].flatten() * maskLocal2
             print("HLocal:\n", HLocal)
             HGlobal_2i2i[ixGlobal] += HLocal

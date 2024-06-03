@@ -8,9 +8,9 @@ import numpy as np
             x   4
            0,0
 """
-r_orig_ic = np.array([[0,0],[1,0],[2,0]])# np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]], dtype=float)  # shape=(nb_positions, 2)
+r_orig_ic = np.array([[0,0],[1,1],[2,2]], dtype=float)# np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]], dtype=float)  # shape=(nb_positions, 2)
 diff = np.zeros_like(r_orig_ic)
-diff[2, 0] += 0.4
+diff[2] += 0.4
 r_stressed_ic = r_orig_ic + diff
 # pairs
 i_p = np.array([0,1,2]) #np.array([0, 1, 2, 1, 4, 3])
