@@ -44,23 +44,26 @@ class Beam:
         rij_pc = r_ic[self.i_p] - r_ic[self.j_p]  # vector rij
         rij_p = np.linalg.norm(rij_pc, axis=1)  # length rij
         rijHat_pc = (rij_pc.T / rij_p).T  # normalized vector rij
-        print(np.einsum('ij,kj->ij', rijHat_pc, rijHat_pc))
+        #print(rijHat_pc.flatten(), "\n", np.outer(rijHat_pc, rijHat_pc))#np.einsum('ij,kj->ij', rijHat_pc, rijHat_pc))
+        rijHat_outer_2p2p = np.outer(rijHat_pc, rijHat_pc)
+        print(rijHat_outer_2p2p)
         # second derivative function for deriving twice in the same coordinate x or y
-        ddU1_i = nt.mabincount(self.i_p, (self.c_p * (1 - ((rij_p - beamlengths_p) / rij_p) + ((rij_p - beamlengths_p)/rij_p))), nb_positions, axis=0)
-        ddU1_i += nt.mabincount(self.j_p, (self.c_p * (1 - ((rij_p - beamlengths_p) / rij_p) + ((rij_p - beamlengths_p)/rij_p))), nb_positions, axis=0)
-        print("ddU1:", ddU1_i)
+        offDiagonal = nt.mabincount(self.i_p, (self.c_p * ((1 - ((rij_p - beamlengths_p) / rij_p) + ((rij_p - beamlengths_p)/rij_p)))), nb_positions, axis=0)
+        offDiagonal += nt.mabincount(self.j_p, (self.c_p * (1 - ((rij_p - beamlengths_p) / rij_p) + ((rij_p - beamlengths_p)/rij_p))), nb_positions, axis=0)
+        # print("ddU1:", offDiagonal)
         # second derivative function for deriving first in x(y) and then in y(x)
-        ddU2_ic = nt.mabincount(self.i_p, (self.c_p * (1*((1-rij_pc).T/rij_p).T).T).T, nb_positions, axis=0)
-        ddU2_ic -= nt.mabincount(self.j_p, (self.c_p * (1*((1-rij_pc).T/rij_p).T).T).T, nb_positions, axis=0)
-        print(ddU2_ic)
+        ddU2_ic = nt.mabincount(self.i_p, self.c_p * (1 - ((rij_p - beamlengths_p) / rij_p)), nb_positions, axis=0)
+        ddU2_ic -= nt.mabincount(self.j_p, self.c_p * (1 - ((rij_p - beamlengths_p) / rij_p)), nb_positions, axis=0)
+        # print(ddU2_ic)
 
         # global hessian, 2*nb_positions x 2*nb_positions
         HGlobal_2i2i = np.zeros([nb_positions*2, nb_positions*2])
 
         # mask for derivatives derived in dxdx or dydy
-        maskLocal1 = np.eye(4) + np.eye(4, k=2) + np.eye(4, k=-2)
+        maskLocal1 = np.eye(4, k=2) + np.eye(4, k=-2)
         # mask for derivatives derived twice in dxdy or dydx
         maskLocal2 = np.eye(4, k=1) + np.eye(4, k=-1) + np.eye(4, k=3) + np.eye(4, k=-3)
+        print(maskLocal1,"\n\n", maskLocal2)
         for m in range(nb_bodies):
             # local beam hessians (4x4)
             HLocal = np.zeros((4, 4))
@@ -73,10 +76,11 @@ class Beam:
             # indicies for local hessian
             localIndexI = np.stack((i_p, j_p), axis=1)
             ixLocal = np.ix_(localIndexI[m], [0,1])
-            print(ixLocal, ddU1_i[ixLocal].flatten())
-
-            HLocal += ddU1_i[ixLocal].flatten() * maskLocal1
-            HLocal += ddU2_ic[ixLocal].flatten() * maskLocal2
+            print(ixLocal)
+            print(m)
+            print(offDiagonal[ixGlobal])
+            HLocal += offDiagonal[ixGlobal].flatten() * maskLocal1
+            HLocal += ddU2_ic[ixGlobal].flatten() * maskLocal2
             print("HLocal:\n", HLocal)
             HGlobal_2i2i[ixGlobal] += HLocal
             print("HGlobal_2i2i:\n", HGlobal_2i2i)
