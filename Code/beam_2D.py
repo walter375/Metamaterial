@@ -21,7 +21,6 @@ class Beam:
     """
     calculates the energy U of the overall system
     """
-
     def UBeam(self, r_ic, beamlengths_p):
         rij_pc = r_ic[self.j_p] - r_ic[self.i_p]  # vector rij
         rij_p = np.linalg.norm(rij_pc, axis=1)  # length of vector rij
@@ -73,7 +72,6 @@ class Beam:
             # indicies for local hessian
             localIndexI = np.stack((i_p, j_p), axis=1)
             ixLocal = np.ix_(localIndexI[m], [0,1])
-
             rHatOuter_44 = np.reshape(
                                 np.swapaxes(
                                     np.resize(np.outer(rijHat_pc[m], rijHat_pc[m]),(4,2,2)),
@@ -81,17 +79,17 @@ class Beam:
                 (4,4))
             rHatOuter_44[[1,2], :] = rHatOuter_44[[2,1],:]
             # print("outer:\n", np.outer(rijHat_pc[m], rijHat_pc[m]))
-            print((rij_p[m] - beamlengths_p[m]) / rij_p[m])
 
-            HLocal -= (rHatOuter_44 * (self.c_p[m] * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))
-                       + np.eye(4) * ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))
+            np.fill_diagonal(HLocal[:,2:], -(rHatOuter_44 * (self.c_p[m] * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))
+                             + np.eye(4) * ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))
+            print(m)
+            np.fill_diagonal(HLocal[:, 1:], -(rHatOuter_44 * (self.c_p[m] * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))))
+            np.fill_diagonal(HLocal[:, 3:], -(rHatOuter_44 * (self.c_p[m] * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))))
+            HLocal += np.tril(np.rot90(np.fliplr(HLocal)),-1)
             print("HLocal:\n", HLocal)
-            HLocal -= (rHatOuter_44 * (self.c_p[m] * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))
-            print("HLocal:\n", HLocal)
-
             HGlobal_2i2i[ixGlobal] += HLocal
 
-            print(m)
+
             print("outer:\n",rHatOuter_44)
 
             print("HGlobal_2i2i:\n", HGlobal_2i2i)

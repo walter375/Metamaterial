@@ -9,17 +9,17 @@ import numpy as np
            0,0
 """
 
-r_orig_ic = np.array([[0,0],[1,1],[2,1]], dtype=float)
-j_p = np.array([0,1,0])
-i_p = np.array([1,2,2])
+r_orig_ic = np.array([[0,0],[1,1],[2,2]], dtype=float)
+j_p = np.array([0,1])
+i_p = np.array([1,2])
 
 # r_orig_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]], dtype=float)  # shape=(nb_positions, 2)
 # # pairs
 # i_p = np.array([0, 1, 2, 1, 4, 3])
 # j_p = np.array([1, 2, 3, 4, 3, 5])
 diff = np.zeros_like(r_orig_ic)
-diff[2,0] += 7
-diff[1,0] += 2
+diff[2] += 4
+
 r_stressed_ic = r_orig_ic + diff
 #print(r_stressed_ic)
 # angles

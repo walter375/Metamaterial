@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE ipe SYSTEM "ipe.dtd">
 <ipe version="70218" creator="Ipe 7.2.24">
-<info created="D:20240429113055" modified="D:20240429115155"/>
+<info created="D:20240429113055" modified="D:20240429204012"/>
 <ipestyle name="basic">
 <symbol name="arrow/arc(spx)">
 <path stroke="sym-stroke" fill="sym-stroke" pen="sym-pen">
@@ -312,54 +312,54 @@ h
 <page>
 <layer name="alpha"/>
 <view layers="alpha" active="alpha"/>
-<path layer="alpha" stroke="black" fill="black">
+<path layer="alpha" stroke="black" fill="black" pen="fat">
 128 704 m
 192 704 l
 </path>
-<path stroke="black" fill="black">
+<path stroke="black" fill="black" pen="fat">
 192 704 m
 256 704 l
 </path>
-<path stroke="black" fill="black">
+<path stroke="black" fill="black" pen="fat">
 256 704 m
 320 704
 320 704 c
 </path>
-<use name="mark/circle(sx)" pos="128 704" size="5" stroke="black"/>
-<use name="mark/circle(sx)" pos="192 704" size="5" stroke="black"/>
-<use name="mark/circle(sx)" pos="256 704" size="5" stroke="black"/>
-<use name="mark/circle(sx)" pos="320 704" size="5" stroke="black"/>
 <text matrix="1 0 0 1 -25.4785 4.76627" transformations="translations" pos="176 704" stroke="black" type="label" width="13.362" height="6.227" depth="0" valign="baseline" size="small">sb0</text>
 <text matrix="1 0 0 1 39.1158 5.46886" transformations="translations" pos="176 704" stroke="black" type="label" width="13.362" height="6.227" depth="0" valign="baseline" size="small">sb1</text>
 <text matrix="1 0 0 1 103.008 5.81991" transformations="translations" pos="176 704" stroke="black" type="label" width="13.362" height="6.227" depth="0" valign="baseline" size="small">sb2</text>
-<path stroke="black">
+<path stroke="black" pen="fat">
 128 752 m
 128 656 l
 </path>
-<path stroke="black">
+<path stroke="black" pen="fat">
 128 752 m
 112 736
 112 736 c
 </path>
-<path stroke="black">
+<path stroke="black" pen="fat">
 128 736 m
 112 720 l
 </path>
-<path stroke="black">
+<path stroke="black" pen="fat">
 128 720 m
 112 704 l
 </path>
-<path stroke="black">
+<path stroke="black" pen="fat">
 128 704 m
 112 688 l
 </path>
-<path stroke="black">
+<path stroke="black" pen="fat">
 128 688 m
 112 672 l
 </path>
-<path stroke="black">
+<path stroke="black" pen="fat">
 128 672 m
 112 656 l
 </path>
+<use name="mark/fdisk(sfx)" pos="128 704" size="large" stroke="black"/>
+<use name="mark/fdisk(sfx)" pos="192 704" size="large" stroke="black" fill="white"/>
+<use name="mark/fdisk(sfx)" pos="256 704" size="large" stroke="black" fill="white"/>
+<use name="mark/fdisk(sfx)" pos="320 704" size="large" stroke="black" fill="white"/>
 </page>
 </ipe>
