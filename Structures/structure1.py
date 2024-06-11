@@ -10,8 +10,9 @@ import numpy as np
 """
 
 r_orig_ic = np.array([[0,0],[1,1],[2,2]], dtype=float)
-j_p = np.array([0,1])
-i_p = np.array([1,2])
+i_p = np.array([0,1])
+j_p = np.array([1,2])
+
 
 # r_orig_ic = np.array([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]], dtype=float)  # shape=(nb_positions, 2)
 # # pairs

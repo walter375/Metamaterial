@@ -35,8 +35,8 @@ class Beam:
         rij_p = np.linalg.norm(rij_pc, axis=1)
         rijHat_pc = (rij_pc.T / rij_p).T
 
-        dU_ic = nt.mabincount(self.i_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, nb_positions, axis=0)
-        dU_ic -= nt.mabincount(self.j_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, nb_positions, axis=0)
+        dU_ic = nt.mabincount(self.i_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, r_ic.shape[0], axis=0)
+        dU_ic -= nt.mabincount(self.j_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, r_ic.shape[0], axis=0)
         return dU_ic
 
     def getHessianBeam(self, r_ic, beamlengths_p):
@@ -51,26 +51,26 @@ class Beam:
         # left2 = nt.mabincount(self.i_p, self.c_p * (1 - ((rij_p - beamlengths_p) / rij_p)), nb_positions, axis=0)
         # right2 = nt.mabincount(self.i_p, self.c_p * ((rij_p - beamlengths_p)/rij_p), nb_positions, axis=0)
 
-        # global hessian, 2*nb_positions x 2*nb_positions
-        HGlobal_2i2i = np.zeros([nb_positions*2, nb_positions*2])
+        # global hessian, 2*nb_positions x 2*nb_positions, nb_positions = r_orig_ic.shape[0]
+        HGlobal_2i2i = np.zeros([r_ic.shape[0]*2, r_ic.shape[0]*2])
 
         # mask for derivatives derived in dxdx or dydy
         maskLocal1 = np.eye(4, k=2) + np.eye(4, k=-2)
         # mask for derivatives derived twice in dxdy or dydx
         maskLocal2 = np.eye(4, k=1) + np.eye(4, k=-1) + np.eye(4, k=3) + np.eye(4, k=-3)
 
-        for m in range(nb_bodies):
+        for m in range(self.i_p.shape[0]):
             # local beam hessian (4x4)
             HLocal = np.zeros((4, 4))
             # indicies for global hessian
-            globalIndexI = np.stack((i_p, j_p), axis=1) * 2
+            globalIndexI = np.stack((self.i_p, self.j_p), axis=1) * 2
             globalIndexJ = globalIndexI + 1
             globalIndex = np.stack((globalIndexI, globalIndexJ), axis=1)
             ix = np.sort(globalIndex[m].flatten())
             ixGlobal = np.ix_(ix, ix)
             # print("ixGlobal:\n", ixGlobal)
             # indicies for local hessian
-            localIndexI = np.stack((i_p, j_p), axis=1)
+            localIndexI = np.stack((self.i_p, self.j_p), axis=1)
             ixLocal = np.ix_(localIndexI[m], [0,1])
             rHatOuter_44 = np.reshape(
                                 np.swapaxes(
@@ -78,24 +78,28 @@ class Beam:
                             1,0).flatten('F'),
                 (4,4))
             rHatOuter_44[[1,2], :] = rHatOuter_44[[2,1],:]
-            # print("outer:\n", np.outer(rijHat_pc[m], rijHat_pc[m]))
+            # print("outer:\n", rHatOuter_44)
 
-            np.fill_diagonal(HLocal[:,2:], -(rHatOuter_44 * (self.c_p[m] * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))
-                             + np.eye(4) * ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))
-            print(m)
-            np.fill_diagonal(HLocal[:, 1:], -(rHatOuter_44 * (self.c_p[m] * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))))
-            np.fill_diagonal(HLocal[:, 3:], -(rHatOuter_44 * (self.c_p[m] * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))))
+            np.fill_diagonal(HLocal[:,2:], np.diag((-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))
+                             + np.eye(4) * ((rij_p[m] - beamlengths_p[m]) / rij_p[m])),2))
+            # print("1:\n",-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])) + np.eye(4) * ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))
+            np.fill_diagonal(HLocal[:, 1:], np.diag((-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))),1))
+            np.fill_diagonal(HLocal[:, 1:], np.diag((-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))),1))
+            # print("2:\n",-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))))
+            np.fill_diagonal(HLocal[:, 3:], np.diag((-(self.c_p[m] *(rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))),3))
+            # print("3:\n",-(self.c_p[m] *(rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))))
             HLocal += np.tril(np.rot90(np.fliplr(HLocal)),-1)
             print("HLocal:\n", HLocal)
             HGlobal_2i2i[ixGlobal] += HLocal
 
 
-            print("outer:\n",rHatOuter_44)
+            # print("outer:\n",rHatOuter_44)
 
-            print("HGlobal_2i2i:\n", HGlobal_2i2i)
+            #print("HGlobal_2i2i:\n", HGlobal_2i2i)
 
-        print("HGlobal_2i2i:\n", HGlobal_2i2i, "\nsum ",np.sum(HGlobal_2i2i,1), "\nsum-diag ",np.sum(HGlobal_2i2i,1)-np.diag(HGlobal_2i2i))
-        np.fill_diagonal(HGlobal_2i2i, (np.sum(HGlobal_2i2i,1)-np.diag(HGlobal_2i2i)))
+        # print("HGlobal_2i2i:\n", HGlobal_2i2i, "\nsum ",np.sum(HGlobal_2i2i,1), "\nsum-diag ",np.sum(HGlobal_2i2i,1)-np.diag(HGlobal_2i2i))
+        np.fill_diagonal(HGlobal_2i2i, -(np.sum(HGlobal_2i2i,1)-np.diag(HGlobal_2i2i)))
+        np.set_printoptions(formatter={'float': lambda x: "{0: 0.1f}".format(x)})
         print("HGlobal_2i2i:\n", HGlobal_2i2i)
 
         return HGlobal_2i2i
