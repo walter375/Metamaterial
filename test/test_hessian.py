@@ -24,7 +24,11 @@ import numpy as np
 import pytest
 from Code import beam_2D as rb
 @pytest.mark.parametrize('positions_ic, i_p, j_p', [
+    ([[0, 0], [0, 1], [0, 2]], [0, 1], [1, 2]),
+    ([[0, 0], [1, 0], [2, 0]], [0, 1], [1, 2]),
     ([[0, 0], [1, 1], [2, 2]], [0, 1], [1, 2]),
+    ([[0, 0], [1, 1], [2, 2], [1, 3]], [0, 1, 0, 2], [1, 2, 3, 3]),
+    ([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]], [0, 1, 2, 1, 4, 3], [1, 2, 3, 4, 3, 5])
 ])
 
 def test_hessian(positions_ic, i_p, j_p, epsilon=0.00001):
@@ -56,9 +60,9 @@ def test_hessian(positions_ic, i_p, j_p, epsilon=0.00001):
             forces = ((gradient_plus_epsilon_half - gradient_minus_epsilon_half) / epsilon).flatten()
             hessian_numerical[:, i*2+d] = forces
             # print(i,d, forces)
-    np.set_printoptions(formatter={'float': lambda x: "{0: 0.1f}".format(x)})
-    print("hessian numerical:\n", hessian_numerical)
+    #np.set_printoptions(formatter={'float': lambda x: "{0: 0.1f}".format(x)})
+    #print("hessian numerical:\n", hessian_numerical)
 
 
-    np.testing.assert_allclose(hessian_2i2i, du_numerical, rtol=1e-6, atol=1e-6)
+    np.testing.assert_allclose(hessian_2i2i, hessian_numerical, rtol=1e-6, atol=1e-6)
 

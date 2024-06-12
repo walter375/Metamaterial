@@ -18,10 +18,11 @@ class Beam:
         self.i_p = i_p
         self.j_p = j_p
 
-    """
-    calculates the energy U of the overall system
-    """
+
     def UBeam(self, r_ic, beamlengths_p):
+        """
+        calculates the energy U of the overall system
+        """
         rij_pc = r_ic[self.j_p] - r_ic[self.i_p]  # vector rij
         rij_p = np.linalg.norm(rij_pc, axis=1)  # length of vector rij
         return np.sum(0.5 * self.c_p * (rij_p - beamlengths_p) ** 2)
@@ -44,64 +45,56 @@ class Beam:
         rij_p = np.linalg.norm(rij_pc, axis=1)  # length rij
         rijHat_pc = (rij_pc.T / rij_p).T  # normalized vector rij
 
-        # derivative function for deriving twice in the same direction xx or yy
-        # left1= nt.mabincount(self.j_p, self.c_p * (1 - ((rij_p - beamlengths_p) / rij_p)), nb_positions, axis=0)
-        # right1 = nt.mabincount(self.j_p, self.c_p * ((rij_p - beamlengths_p)/rij_p), nb_positions, axis=0)
-        #
-        # left2 = nt.mabincount(self.i_p, self.c_p * (1 - ((rij_p - beamlengths_p) / rij_p)), nb_positions, axis=0)
-        # right2 = nt.mabincount(self.i_p, self.c_p * ((rij_p - beamlengths_p)/rij_p), nb_positions, axis=0)
-
         # global hessian, 2*nb_positions x 2*nb_positions, nb_positions = r_orig_ic.shape[0]
         HGlobal_2i2i = np.zeros([r_ic.shape[0]*2, r_ic.shape[0]*2])
 
-        # mask for derivatives derived in dxdx or dydy
-        maskLocal1 = np.eye(4, k=2) + np.eye(4, k=-2)
-        # mask for derivatives derived twice in dxdy or dydx
-        maskLocal2 = np.eye(4, k=1) + np.eye(4, k=-1) + np.eye(4, k=3) + np.eye(4, k=-3)
-
         for m in range(self.i_p.shape[0]):
-            # local beam hessian (4x4)
-            HLocal = np.zeros((4, 4))
             # indicies for global hessian
             globalIndexI = np.stack((self.i_p, self.j_p), axis=1) * 2
             globalIndexJ = globalIndexI + 1
             globalIndex = np.stack((globalIndexI, globalIndexJ), axis=1)
             ix = np.sort(globalIndex[m].flatten())
             ixGlobal = np.ix_(ix, ix)
-            # print("ixGlobal:\n", ixGlobal)
-            # indicies for local hessian
-            localIndexI = np.stack((self.i_p, self.j_p), axis=1)
-            ixLocal = np.ix_(localIndexI[m], [0,1])
-            rHatOuter_44 = np.reshape(
-                                np.swapaxes(
-                                    np.resize(np.outer(rijHat_pc[m], rijHat_pc[m]),(4,2,2)),
-                            1,0).flatten('F'),
-                (4,4))
-            rHatOuter_44[[1,2], :] = rHatOuter_44[[2,1],:]
+            # local beam hessian (4x4), subhessian in local hessian (2x2)
+            HLocal_44 = np.zeros((4, 4))
+            HLocal_22 = np.zeros((2, 2))
+            rHatOuter_22 = np.outer(rijHat_pc[m], rijHat_pc[m])
+            np.fill_diagonal(HLocal_22[:,0:], np.diag(((self.c_p[m] * (rHatOuter_22 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))
+                                                                        + np.eye(2) * ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))),0))
+            np.fill_diagonal(HLocal_22[:,1:], np.diag(((self.c_p[m] * (rHatOuter_22 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))),1))
+            # fill lower triangle with same values as upper triangle, hessian is symmetric
+            HLocal_22 += np.tril(np.rot90(np.fliplr(HLocal_22)), -1)
+            # fill subhessians into local hessian
+            HLocal_44[0:2,0:2] += HLocal_22
+            HLocal_44[2:4,0:2] -= HLocal_22
+            HLocal_44[0:2,2:4] -= HLocal_22
+            HLocal_44[2:4,2:4] += HLocal_22
+
+            # rHatOuter_44 = np.reshape(
+            #                     np.swapaxes(
+            #                         np.resize(np.outer(rijHat_pc[m], rijHat_pc[m]),(4,2,2)),
+            #                 1,0).flatten('F'),
+            #     (4,4))
+            # rHatOuter_44[[1,2], :] = rHatOuter_44[[2,1],:]
             # print("outer:\n", rHatOuter_44)
+            # np.fill_diagonal(HLocal_44[:,2:], np.diag((-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))
+            #                  + np.eye(4) * ((rij_p[m] - beamlengths_p[m]) / rij_p[m])),2))
+            # #print("1:\n",-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])) + np.eye(4) * ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))
+            # #print(HLocal_44)
+            # np.fill_diagonal(HLocal_44[:, 1:], np.diag((-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))),1))
+            # # print("2:\n",-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))))
+            # # print(HLocal_44)
+            # np.fill_diagonal(HLocal_44[:, 3:], np.diag((-(self.c_p[m] *(rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))),3))
+            # # print("3:\n",-(self.c_p[m] *(rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))))
+            # # print(HLocal_44)
+            # HLocal_44 += np.tril(np.rot90(np.fliplr(HLocal_44)), -1)
 
-            np.fill_diagonal(HLocal[:,2:], np.diag((-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))
-                             + np.eye(4) * ((rij_p[m] - beamlengths_p[m]) / rij_p[m])),2))
-            # print("1:\n",-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])) + np.eye(4) * ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))
-            np.fill_diagonal(HLocal[:, 1:], np.diag((-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))),1))
-            np.fill_diagonal(HLocal[:, 1:], np.diag((-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))),1))
-            # print("2:\n",-(self.c_p[m] * (rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))))
-            np.fill_diagonal(HLocal[:, 3:], np.diag((-(self.c_p[m] *(rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m]))))),3))
-            # print("3:\n",-(self.c_p[m] *(rHatOuter_44 * (1 - ((rij_p[m] - beamlengths_p[m]) / rij_p[m])))))
-            HLocal += np.tril(np.rot90(np.fliplr(HLocal)),-1)
-            print("HLocal:\n", HLocal)
-            HGlobal_2i2i[ixGlobal] += HLocal
-
-
-            # print("outer:\n",rHatOuter_44)
-
-            #print("HGlobal_2i2i:\n", HGlobal_2i2i)
-
-        # print("HGlobal_2i2i:\n", HGlobal_2i2i, "\nsum ",np.sum(HGlobal_2i2i,1), "\nsum-diag ",np.sum(HGlobal_2i2i,1)-np.diag(HGlobal_2i2i))
+            # fill global hessian with local hessian
+            HGlobal_2i2i[ixGlobal] += HLocal_44
+        # calculate diagonal terms of global hessian
         np.fill_diagonal(HGlobal_2i2i, -(np.sum(HGlobal_2i2i,1)-np.diag(HGlobal_2i2i)))
-        np.set_printoptions(formatter={'float': lambda x: "{0: 0.1f}".format(x)})
-        print("HGlobal_2i2i:\n", HGlobal_2i2i)
-
+        # np.set_printoptions(formatter={'float': lambda x: "{0: 0.1f}".format(x)})
+        # print("HGlobal_2i2i:\n", HGlobal_2i2i)
         return HGlobal_2i2i
     def UBeamObjective(self, ric_flat, beamlengths_p):
         r_ic = ricUnflat(ric_flat, r_stressed_ic, border, x, y)
@@ -111,14 +104,45 @@ class Beam:
 
     def gradientUBeamObjective(self, ric_flat, beamlengths_p):
         r_ic = ricUnflat(ric_flat, r_stressed_ic, border, x, y)
-        rij_pc = r_ic[self.i_p] - r_ic[self.j_p]
-        rij_p = np.linalg.norm(rij_pc, axis=1)
-        rijHat_pc = (rij_pc.T / rij_p).T
-
-        dU_p = nt.mabincount(self.i_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, nb_positions, axis=0)
-        dU_p -= nt.mabincount(self.j_p, (self.c_p * (rij_p - beamlengths_p) * rijHat_pc.T).T, nb_positions, axis=0)
+        dU_p = self.getGradientBeam(r_ic, beamlengths_p)
         dU_p_flat = ricFlat(dU_p, border, x, y)
         return dU_p_flat
+
+    def hessianUBeamObjective(self, ric_flat, beamlengths_p):
+        r_ic = ricUnflat(ric_flat, r_stressed_ic, border, x, y)
+        d2U_p = self.getHessianBeam(r_ic, beamlengths_p)
+        d2U_p_flat = ricFlat(d2U_p, border, x, y)
+        return d2U_p_flat
+    def displacementObjective(self, c, ric_flat, beamlengths_p, displacement1=None, displacement2=None):
+        """ returns the displacement of the position at displacement1 in comparison to the original position
+            or the difference between the positions at displacement1 and displacement2 and the original difference """
+        self.c_p = c
+        # all current positions
+        roptimizer_ic = runOptimizer(self.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=self.gradientUBeamObjective, hessian=self.hessianUBeamObjective)
+        # all displacements, roptimizer_ic - r_orig_ic
+        displacements_ic = np.zeros_like(roptimizer_ic)
+        if (displacement1 != None and displacement2 != None):
+             # points are closer -> difference is negative, points are further apart -> difference is positive
+            displacements_ic[displacement1] = roptimizer_ic[displacement1] - r_orig_ic[displacement1]
+            displacements_ic[displacement2] = roptimizer_ic[displacement2] - r_orig_ic[displacement2]
+            displacement = displacements_ic[displacement1] - displacements_ic[displacement2]
+        elif (displacement1 != None):
+            # point moves forward(righ/up) -> difference is positive, point moves backward(left/down) -> difference is negative
+            displacement,displacements_ic[displacement1] = roptimizer_ic[displacement1] - r_orig_ic[displacement1]
+        return displacement
+
+    def gradientDisplacementObjective(self, r_orig_ic, beamlengths_p, displacements_ic):
+        alpha = np.ones(r_orig_ic.shape[0]* r_orig_ic.shape[1])
+        alphaOpt = scipy.optimize.minimize(self.adjointMethodObjective, alpha, args=(r_orig_ic, beamlengths_p,
+                                                                                     displacements_ic))
+        print("alphaOpt:\n", alphaOpt)
+
+        return 0
+
+    def adjointMethodObjective(self, alpha, r_orig_ic, beamlengths_p, displacement):
+        hessian = self.getHessianBeam(r_orig_ic, beamlengths_p)
+        return alpha * hessian - 2*displacement
+
 
 class Angle:
     def __init__(self, c_t, i_t, j_t, k_t):
@@ -453,8 +477,8 @@ def conLen(ric_flat):
     len1 = getBeamLength(r_ic, i_p, j_p)
     # print(len1-len0)
     return len1 - len0
-def runOptimizer(function, x0, arguments, cons={}, gradient=None):
-    res = scipy.optimize.minimize(function, x0=x0, args=(arguments), constraints=cons, jac=gradient)
+def runOptimizer(function, x0, arguments, cons={}, gradient=None, hessian=None):
+    res = scipy.optimize.minimize(function, x0=x0, method='l-bfgs-b', args=(arguments), constraints=cons, jac=gradient, hess=hessian)
     points = ricUnflat(res.x, r_stressed_ic, border, x, y)
     return points
 def plotResults(points1, points2, points3, points4):
@@ -500,34 +524,38 @@ if __name__ == "__main__":
     beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
     c_p = np.ones(nb_bodies)
     beam = Beam(c_p, i_p, j_p)
-    beam.getGradientBeam(r_orig_ic, beamlengths_p)
-    beam.getHessianBeam(r_orig_ic, beamlengths_p)
+
     # beam.UBeam(r_stressed_ic, beamlengths_p)
     # beam.dUBeam(r_stressed_ic, beamlengths_p)
     ''' angles '''
-    # c_t = np.ones(nb_angles)
-    # angle = Angle(c_t, i_t, j_t, k_t)
-    # cos0_t = getCosAngles(r_orig_ic, i_t, j_t, k_t)
-    # cosijk_t = getCosAngles(r_stressed_ic, i_t, j_t, k_t)
-    # ''' beam angle combination '''
-    # ba = BeamAngle(beam, angle)
-    #
-    # border = getBorderPoints(r_stressed_ic, left, right)
-    # ric_flat = ricFlat(r_stressed_ic,border, x, y)
-    # p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
-    # cons = [{'type': 'eq', 'fun': conLen}]
-    # p2 = runOptimizer(angle.UAngleObjective, ric_flat, cos0_t, cons=cons, gradient=angle.gradientUAngleObjective)
-    # stiffness_angle1 = 10
-    # stiffness_beam1 = 10
-    # angle.c_t = np.full(nb_angles, stiffness_angle1)
-    # beam.c_p = np.full(nb_bodies, stiffness_beam1)
-    # p3 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
-    # stiffness_angle2 = 5
-    # stiffness_beam2 = 200
-    # angle.c_t = np.full(nb_angles, stiffness_angle2)
-    # beam.c_p = np.full(nb_bodies, stiffness_beam2)
-    # p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
-    # plotResults(p1, p2, p3, p4)
+    c_t = np.ones(nb_angles)
+    angle = Angle(c_t, i_t, j_t, k_t)
+    cos0_t = getCosAngles(r_orig_ic, i_t, j_t, k_t)
+    cosijk_t = getCosAngles(r_stressed_ic, i_t, j_t, k_t)
+    ''' beam angle combination '''
+    ba = BeamAngle(beam, angle)
+
+    border = getBorderPoints(r_stressed_ic, left, right)
+    ric_flat = ricFlat(r_stressed_ic,border, x, y)
+    p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
+    displacement = beam.displacementObjective(c_p, ric_flat, beamlengths_p, 3)
+    print("displacement:\n", displacement)
+    print(beam.gradientDisplacementObjective(r_orig_ic, beamlengths_p, displacement))
+    #print(beam.getHessianBeam(r_stressed_ic, beamlengths_p))
+    #print(scipy.linalg.solve(beam.getHessianBeam(r_stressed_ic, beamlengths_p), beam.getGradientBeam(r_stressed_ic, beamlengths_p).flatten()))
+    cons = [{'type': 'eq', 'fun': conLen}]
+    p2 = runOptimizer(angle.UAngleObjective, ric_flat, cos0_t, cons=cons, gradient=angle.gradientUAngleObjective)
+    stiffness_angle1 = 10
+    stiffness_beam1 = 10
+    angle.c_t = np.full(nb_angles, stiffness_angle1)
+    beam.c_p = np.full(nb_bodies, stiffness_beam1)
+    p3 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
+    stiffness_angle2 = 5
+    stiffness_beam2 = 200
+    angle.c_t = np.full(nb_angles, stiffness_angle2)
+    beam.c_p = np.full(nb_bodies, stiffness_beam2)
+    p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
+    plotResults(p1, p2, p3, p4)
 
 
 
