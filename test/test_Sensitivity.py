@@ -31,7 +31,7 @@ from Code import beam_2D as rb
     ([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]], [0, 1, 2, 1, 4, 3], [1, 2, 3, 4, 3, 5])
 ])
 
-def test_hessian(positions_ic, i_p, j_p, epsilon=0.001):
+def test_sensitivity(c_p, positions_ic, i_p, j_p,, r_orig_ic, optimizePos1, dim, optimizePos2=None, epsilon=0.001):
     positions_ic = np.array(positions_ic, dtype=float)
     nb_hinges, nb_dims = positions_ic.shape
     # nb_bodies = len(i_p)
@@ -65,4 +65,3 @@ def test_hessian(positions_ic, i_p, j_p, epsilon=0.001):
 
 
     np.testing.assert_allclose(hessian_2i2i, hessian_numerical, rtol=1e-6, atol=1e-6)
-
