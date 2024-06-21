@@ -23,45 +23,78 @@
 import numpy as np
 import pytest
 from Code import beam_2D as rb
-@pytest.mark.parametrize('positions_ic, i_p, j_p', [
-    ([[0, 0], [0, 1], [0, 2]], [0, 1], [1, 2]),
-    ([[0, 0], [1, 0], [2, 0]], [0, 1], [1, 2]),
-    ([[0, 0], [1, 1], [2, 2]], [0, 1], [1, 2]),
-    ([[0, 0], [1, 1], [2, 2], [1, 3]], [0, 1, 0, 2], [1, 2, 3, 3]),
-    ([[0, 1], [1, 1], [2, 2], [3, 1], [2, 0], [4, 1]], [0, 1, 2, 1, 4, 3], [1, 2, 3, 4, 3, 5])
+
+global border
+global r_stressed_ic
+
+@pytest.mark.parametrize('positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2', [
+    ([[0, 0], [0, 1], [0, 2]], [0, 1], [1, 2], 1, 0, None),
+    ([[0, 0], [1, 0], [2, 0]], [0, 1], [1, 2], 1, 1, None),
+    ([[0, 0], [1, 1], [2, 2]], [0, 1], [1, 2], 1, 0, None),
 ])
 
-def test_sensitivity(c_p, positions_ic, i_p, j_p,, r_orig_ic, optimizePos1, dim, optimizePos2=None, epsilon=0.001):
+
+def test_sensitivity( positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2, epsilon=0.001):
     positions_ic = np.array(positions_ic, dtype=float)
+
+    r_stressed_ic = np.zeros_like(positions_ic)
+    r_stressed_ic += positions_ic
+    r_stressed_ic[-1] += 0.5
+    # global border
+    border = rb.getBorderPoints(r_stressed_ic, left=1, right=1)
     nb_hinges, nb_dims = positions_ic.shape
-    # nb_bodies = len(i_p)
+    nb_bodies = len(i_p)
     i_p = np.array(i_p)
     j_p = np.array(j_p)
+
     c_p = np.ones(len(i_p))
 
-    beam = rb.Beam(c_p, i_p, j_p)
+    beam = rb.Beam(c_p, i_p, j_p, positions_ic, r_stressed_ic, border, x=1, y=1)
     beam_lengths_p = rb.getBeamLength(positions_ic, i_p, j_p)
+    positions_flat = rb.ricFlat(r_stressed_ic, border, 1, 1)
 
-    hessian_2i2i = beam.getHessianBeam(positions_ic, beam_lengths_p)
-    hessian_numerical = np.zeros_like(hessian_2i2i, dtype=float)
-    #print("hessian analytical:\n", hessian_2i2i)
+    sensitivityAnalytical_2i = beam.displacementSensitivityObjective(c_p,
+                                                            positions_flat,
+                                                            beam_lengths_p,
+                                                            positions_ic,
+                                                            optimizePos1,
+                                                            dim,
+                                                            optimizePos2,
+                                                            )
+    sensitivityNumerical_2i = np.zeros_like(sensitivityAnalytical_2i, dtype=float)
+    print("s",sensitivityAnalytical_2i)
     forces = np.zeros((2,2))
-    for i in range(nb_hinges):
-        for d in range(nb_dims):
-            diff_ic = np.zeros_like(positions_ic)
-            diff_ic[i, d] = epsilon / 2
+    for i in range(nb_bodies):
+        diff_ic = np.zeros_like(c_p)
+        diff_ic[i] = epsilon / 2
 
-            positions_minus_epsilon_half_ic = positions_ic - diff_ic
-            positions_plus_epsilon_half_ic = positions_ic + diff_ic
+        c_minus_epsilon_half_ic = c_p - diff_ic
+        c_plus_epsilon_half_ic = c_p + diff_ic
 
-            gradient_minus_epsilon_half = beam.getGradientBeam(positions_minus_epsilon_half_ic, beam_lengths_p)
-            gradient_plus_epsilon_half = beam.getGradientBeam(positions_plus_epsilon_half_ic, beam_lengths_p)
-
-            forces = ((gradient_plus_epsilon_half - gradient_minus_epsilon_half) / epsilon).flatten()
-            hessian_numerical[:, i*2+d] = forces
+        displacement_minus_epsilon_half = beam.displacementObjective(c_minus_epsilon_half_ic,
+                                                                     positions_flat,
+                                                                     beam_lengths_p,
+                                                                     positions_ic,
+                                                                     optimizePos1,
+                                                                     dim,
+                                                                     optimizePos2
+                                                                     )
+        displacement_plus_epsilon_half = beam.displacementObjective(c_plus_epsilon_half_ic,
+                                                                    positions_flat,
+                                                                    beam_lengths_p,
+                                                                    positions_ic,
+                                                                    optimizePos1,
+                                                                    dim,
+                                                                    optimizePos2
+                                                                    )
+        displacements = ((displacement_plus_epsilon_half - displacement_minus_epsilon_half) / epsilon)
+        print("d",displacements)
+        #sensitivityNumerical_2i[i] = displacements
+        print("sN",sensitivityNumerical_2i)
             # print(i,d, forces)
     #np.set_printoptions(formatter={'float': lambda x: "{0: 0.1f}".format(x)})
     #print("hessian numerical:\n", hessian_numerical)
 
 
-    np.testing.assert_allclose(hessian_2i2i, hessian_numerical, rtol=1e-6, atol=1e-6)
+    np.testing.assert_allclose(sensitivityAnalytical_2i, sensitivityNumerical_2i, rtol=1e-6, atol=1e-6)
+

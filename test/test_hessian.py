@@ -45,7 +45,7 @@ def test_hessian(positions_ic, i_p, j_p, epsilon=0.001):
     hessian_2i2i = beam.getHessianBeam(positions_ic, beam_lengths_p)
     hessian_numerical = np.zeros_like(hessian_2i2i, dtype=float)
     #print("hessian analytical:\n", hessian_2i2i)
-    forces = np.zeros((2,2))
+    # forces = np.zeros((2,2))
     for i in range(nb_hinges):
         for d in range(nb_dims):
             diff_ic = np.zeros_like(positions_ic)

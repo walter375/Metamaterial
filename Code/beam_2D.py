@@ -1,8 +1,8 @@
 import numpy as np
+import setuptools
 from matscipy import numpy_tricks as nt
 import scipy.optimize
 import matplotlib.pyplot as plt
-
 """  
 suffix:
         _i: number of positions length
@@ -10,13 +10,16 @@ suffix:
         _t: triplet length
         _c: cartesian (2D, x & y)
 """
-
-
 class Beam:
-    def __init__(self, c_p, i_p, j_p):
+    def __init__(self, c_p, i_p, j_p, r_orig_ic, r_stressed_ic, border, x, y):
         self.c_p = c_p
         self.i_p = i_p
         self.j_p = j_p
+        self.r_orig_ic = r_orig_ic
+        self.r_stressed_ic = r_stressed_ic
+        self.border = border
+        self.x = x
+        self.y = y
 
 
     def UBeam(self, r_ic, beamlengths_p):
@@ -77,61 +80,69 @@ class Beam:
         # print("HGlobal_2i2i:\n", HGlobal_2i2i)
         return HGlobal_2i2i
     def UBeamObjective(self, ric_flat, beamlengths_p):
-        r_ic = ricUnflat(ric_flat, r_stressed_ic, border, x, y)
+        r_ic = ricUnflat(ric_flat, self.r_stressed_ic, self.border, self.x, self.y)
         rij_pc = r_ic[self.j_p] - r_ic[self.i_p]  # vector rij
         rij_p = np.linalg.norm(rij_pc, axis=1)  # length of vector rij
         return np.sum(0.5 * self.c_p * (rij_p - beamlengths_p) ** 2)
 
     def gradientUBeamObjective(self, ric_flat, beamlengths_p):
-        r_ic = ricUnflat(ric_flat, r_stressed_ic, border, x, y)
+        r_ic = ricUnflat(ric_flat, self.r_stressed_ic, self.border, self.x, self.y)
         dU_p = self.getGradientBeam(r_ic, beamlengths_p)
-        dU_p_flat = ricFlat(dU_p, border, x, y)
+        dU_p_flat = ricFlat(dU_p, self.border, self.x, self.y)
         return dU_p_flat
 
     def hessianUBeamObjective(self, ric_flat, beamlengths_p):
-        r_ic = ricUnflat(ric_flat, r_stressed_ic, border, x, y)
+        r_ic = ricUnflat(ric_flat, r_stressed_ic, self.border, x, y)
         d2U_p = self.getHessianBeam(r_ic, beamlengths_p)
-        d2U_p_flat = ricFlat(d2U_p, border, x, y)
+        d2U_p_flat = ricFlat(d2U_p, self.border, x, y)
         return d2U_p_flat
-    def displacementObjective(self, c_p, ric_flat, beamlengths_p, r_orig_ic, optimizePos1, dim, optimizePos2=None):
+    def displacementObjective(self, cGuess_p, ric_flat, beamlengths_p, r_orig_ic, optimizePos1, dim, optimizePos2=None):
         """ returns the displacement of the position at optimizePos1 in comparison to the original position """
-        self.c_p = c_p
+        self.c_p = cGuess_p
         #print("objective:\n",c_p)
         roptimizer_ic = runOptimizer(self.UBeamObjective,
                                      ric_flat,
                                      beamlengths_p,
                                      cons={},
                                      gradient=self.gradientUBeamObjective,
-                                     hessian=self.hessianUBeamObjective)
+                                     hessian=self.hessianUBeamObjective,
+                                     )
+        roptimizer_ic = ricUnflat(roptimizer_ic, self.r_stressed_ic, self.border, self.x, self.y)
         # point moves forward(righ/up) -> difference is positive,
         # point moves backward(left/down) -> difference is negative
         if (optimizePos2 is None):
             displacements_ic = (roptimizer_ic - r_orig_ic) ** 2
             # print("return value:\n", displacements_ic[optimizePos1, dim])
             # print("return value:\n", roptimizer_ic[optimizePos1, dim])
-            return displacements_ic[optimizePos1, dim]
+            return displacements_ic #displacements_ic[optimizePos1, dim]
         else:
             displacements_ic =(roptimizer_ic - r_orig_ic)**2
             distance = (displacements_ic[optimizePos1, dim] - displacements_ic[optimizePos2, dim])
             return distance
 
 
-    def displacementSensitivityObjective(self, c_p, ric_flat, beamlengths_p, r_orig_ic, optimizePos1, dim, optimizePos2=None):
-        self.c_p = c_p
+    def displacementSensitivityObjective(self, cGuess_p, ric_flat, beamlengths_p, r_orig_ic,
+                                         optimizePos1, dim, optimizePos2=None):
+        self.c_p = cGuess_p
         #print("sensitive:\n",c_p)
         r_current_ic = runOptimizer(self.UBeamObjective,
                                      ric_flat,
                                      beamlengths_p,
                                      cons={},
                                      gradient=self.gradientUBeamObjective,
-                                     hessian=self.hessianUBeamObjective)
-        lambda_2i = np.zeros(r_orig_ic.shape[0]* r_orig_ic.shape[1])
-        dfdr = np.zeros_like(r_orig_ic)
-        dfdr[optimizePos1, dim] = 2 * (r_current_ic[optimizePos1, dim] - r_orig_ic[optimizePos1, dim]) # self.getGradientBeam(r_current_ic, beamlengths_p)
+                                     hessian=self.hessianUBeamObjective,
+                                     )
+        r_current_ic = ricUnflat(r_current_ic, self.r_stressed_ic,
+                                 self.border, self.x, self.y)
+        #print(r_current_ic.shape, self.r_orig_ic.shape)
+        lambda_2i = np.zeros(self.r_orig_ic.shape[0]* self.r_orig_ic.shape[1])
+        dfdr = np.zeros_like(self.r_orig_ic)
+        dfdr[optimizePos1, dim] = 2 * (r_current_ic[optimizePos1, dim]
+                                       - self.r_orig_ic[optimizePos1, dim]) # self.getGradientBeam(r_current_ic, beamlengths_p)
         # print("gradient:\n", gradient)
         hessian = self.getHessianBeam(r_current_ic, beamlengths_p)
-
-        for i in range(len(border)):
+        #print(hessian.shape, dfdr.shape)
+        for i in range(len(self.border)):
             hessian[0]= 0
             hessian[1] = 0
             hessian[:,0] = 0
@@ -149,19 +160,22 @@ class Beam:
         rijCurrent_pc = r_current_ic[self.i_p] - r_current_ic[self.j_p]  # vector rij
         rijCurrent_p = np.linalg.norm(rijCurrent_pc, axis=1)  # length rij
         rijHatCurrent_pc = (rijCurrent_pc.T / rijCurrent_p).T
-        dgdc_2ip = np.zeros((r_orig_ic.shape[0] * r_orig_ic.shape[1], c_p.shape[0]))
-        for n in range (len(c_p)):
-            dEdc_pc = (rijCurrent_p[n] - beamlengths_p[n])*rijHatCurrent_pc[n]
+        dgdc_2ip = np.zeros((self.r_orig_ic.shape[0] * self.r_orig_ic.shape[1], self.c_p.shape[0]))
+        dEdc_pc = nt.mabincount(self.i_p, (rijCurrent_p - beamlengths_p) * rijHatCurrent_pc, self.c_p.shape[0], axis=0)
+        print(dEdc_pc)
+        dEdc_pc -= nt.mabincount(self.j_p, (rijCurrent_p - beamlengths_p) * rijHatCurrent_pc, self.c_p.shape[0], axis=0)
+        print(dEdc_pc)
+        for n in range (len(self.c_p)):
             #print(dEdc_pc)
             indexIx = self.i_p[n]*2
             indexIy = self.i_p[n]*2+1
             indexJx = self.j_p[n]*2
             indexJy = self.j_p[n]*2+1
 
-            dgdc_2ip[indexIx, n] += dEdc_pc[0]
-            dgdc_2ip[indexIy, n] += dEdc_pc[1]
-            dgdc_2ip[indexJx, n] += dEdc_pc[0]
-            dgdc_2ip[indexJy, n] += dEdc_pc[1]
+            dgdc_2ip[indexIx, n] = dEdc_pc[0]
+            dgdc_2ip[indexIy, n] = dEdc_pc[1]
+            dgdc_2ip[indexJx, n] = dEdc_pc[0]
+            dgdc_2ip[indexJy, n] = dEdc_pc[1]
         # return sensitivity = dg/dc + df/dc + dr/dc(df/dr+dg/dr)
         # df/dc=0, df/dr+dg/dr=0 -> dr/dc(df/dr+dg/dr)=0
         return np.matmul(lambda_2i, dgdc_2ip)
@@ -499,10 +513,9 @@ def conLen(ric_flat):
     len1 = getBeamLength(r_ic, i_p, j_p)
     # print(len1-len0)
     return len1 - len0
-def runOptimizer(function, x0, arguments, cons={}, gradient=None, hessian=None):
+def runOptimizer(function, x0, arguments, cons={}, gradient=None, hessian=None, print=1):
     res = scipy.optimize.minimize(function, x0=x0,  args=(arguments), constraints=cons, jac=gradient, hess=hessian) #method='l-bfgs-b',
-    points = ricUnflat(res.x, r_stressed_ic, border, x, y)
-    return points
+    return res.x
 def plotResults(points1, points2, points3, points4):
     f, ([ax1, ax2], [ax3, ax4]) = plt.subplots(2, 2, sharex=all, sharey=all)
     for i, j in zip(i_p, j_p):
@@ -599,10 +612,6 @@ if __name__ == "__main__":
     # p4 = np.zeros_like(r_orig_ic)
     # plotResults(p1, p2, p3, p4)
 
-
-
-
-    from Structures import structure2 as s2
     # r_orig_ic = s2.r_orig_ic
     # r_stressed_ic = s2.r_stressed_ic
     # i_p = s2.i_p
@@ -647,7 +656,6 @@ if __name__ == "__main__":
     # p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
     # plotResults(p1, p2, p3, p4)
 
-    from Structures import structure3 as s3
     # r_orig_ic = s3.r_orig_ic
     # r_stressed_ic = s3.r_stressed_ic
     # i_p = s3.i_p
@@ -702,7 +710,6 @@ if __name__ == "__main__":
     # p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
     # plotResults(p1, p2, p3, p4)
 
-    from Structures import InverterMechanism as im
     # r_orig_ic = im.r_orig_ic
     # r_stressed_ic = im.r_stressed_ic
     # i_p = im.i_p
@@ -768,7 +775,7 @@ if __name__ == "__main__":
     ''' beams '''
     beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
     c_p = np.ones(nb_bodies)
-    beam = Beam(c_p, i_p, j_p)
+    beam = Beam(c_p, i_p, j_p, r_orig_ic, r_stressed_ic, getBorderPoints(r_stressed_ic, left, right), x, y)
     ''' angles '''
     c_t = np.ones(nb_angles)
     angle = Angle(c_t, i_t, j_t, k_t)
@@ -777,14 +784,13 @@ if __name__ == "__main__":
     ''' beam angle combination '''
     ba = BeamAngle(beam, angle)
     ''' optimizer '''
-    border = getBorderPoints(r_stressed_ic, left, right)
-    border = np.sort(np.append(border,6))  # add point 3 to points to be fixed
-    ric_flat = ricFlat(r_stressed_ic,border, x, y)
+    beam.border = np.sort(np.append(beam.border,6))  # add point 3 to points to be fixed
+    ric_flat = ricFlat(r_stressed_ic, beam.border, x, y)
     optPos1 = 10
     optPos2 = None
     dim = 1
     c0_p = np.random.rand(nb_bodies)*100
-    p1 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
+    #p1 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
     cons = [{'type': 'eq', 'fun': conLen}]
     stiffness_bounds = scipy.optimize.Bounds(lb=0.1, ub=1000, keep_feasible=True)
     cOptimize = scipy.optimize.minimize(beam.displacementObjective,
