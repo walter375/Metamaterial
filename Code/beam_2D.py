@@ -114,7 +114,7 @@ class Beam:
             displacements_ic = (roptimizer_ic - r_orig_ic) ** 2
             # print("return value:\n", displacements_ic[optimizePos1, dim])
             # print("return value:\n", roptimizer_ic[optimizePos1, dim])
-            return displacements_ic #displacements_ic[optimizePos1, dim]
+            return displacements_ic[optimizePos1, dim]
         else:
             displacements_ic =(roptimizer_ic - r_orig_ic)**2
             distance = (displacements_ic[optimizePos1, dim] - displacements_ic[optimizePos2, dim])
@@ -143,12 +143,17 @@ class Beam:
         hessian = self.getHessianBeam(r_current_ic, beamlengths_p)
         #print(hessian.shape, dfdr.shape)
         for i in range(len(self.border)):
+            # fix position 0 for over constraining the hessian
             hessian[0]= 0
             hessian[1] = 0
             hessian[:,0] = 0
             hessian[:,1] = 0
             hessian[0, 0] = 1
             hessian[1,1] = 1
+            hessian[-1] = 0
+            hessian[:, -1] = 0
+            hessian[-1, -1] = 1
+            dfdr[-1, dim] = -(r_current_ic[-1,dim] - r_orig_ic[-1,dim])
         lambda_2i=scipy.sparse.linalg.cg(hessian,
                                          -dfdr.flatten(),
                                          lambda_2i,
@@ -161,24 +166,41 @@ class Beam:
         rijCurrent_p = np.linalg.norm(rijCurrent_pc, axis=1)  # length rij
         rijHatCurrent_pc = (rijCurrent_pc.T / rijCurrent_p).T
         dgdc_2ip = np.zeros((self.r_orig_ic.shape[0] * self.r_orig_ic.shape[1], self.c_p.shape[0]))
-        dEdc_pc = nt.mabincount(self.i_p, (rijCurrent_p - beamlengths_p) * rijHatCurrent_pc, self.c_p.shape[0], axis=0)
-        print(dEdc_pc)
-        dEdc_pc -= nt.mabincount(self.j_p, (rijCurrent_p - beamlengths_p) * rijHatCurrent_pc, self.c_p.shape[0], axis=0)
-        print(dEdc_pc)
+        # for n in range (len(self.c_p)):
+        #     dEdc_pc = (rijCurrent_p[n] - beamlengths_p[n])*rijHatCurrent_pc[n]
+        #     print(dEdc_pc)
+        #     indexIx = self.i_p[n]*2
+        #     indexIy = self.i_p[n]*2+1
+        #     indexJx = self.j_p[n]*2
+        #     indexJy = self.j_p[n]*2+1
+        #
+        #     dgdc_2ip[indexIx, n] = dEdc_pc[0]
+        #     dgdc_2ip[indexIy, n] = dEdc_pc[1]
+        #     dgdc_2ip[indexJx, n] = dEdc_pc[0]
+        #     dgdc_2ip[indexJy, n] = dEdc_pc[1]
+        #dForce_ic = nt.mabincount(self.i_p,
+        #                          self.c_p*(rijCurrent_p - beamlengths_p) * rijHatCurrent_pc,
+        #                          self.r_orig_ic.shape[0], axis=0)
+        #dForce_ic -= nt.mabincount(self.j_p, -self.c_p*(rijCurrent_p - beamlengths_p) * rijHatCurrent_pc, self.r_orig_ic.shape[0], axis=0)
+        # print("dForcedc_p:\n",dForcedc_pc)
+        # print(dForce_ic.flatten())
+        # dEdc_2i = dForce_ic.flatten()
         for n in range (len(self.c_p)):
-            #print(dEdc_pc)
-            indexIx = self.i_p[n]*2
-            indexIy = self.i_p[n]*2+1
-            indexJx = self.j_p[n]*2
-            indexJy = self.j_p[n]*2+1
-
-            dgdc_2ip[indexIx, n] = dEdc_pc[0]
-            dgdc_2ip[indexIy, n] = dEdc_pc[1]
-            dgdc_2ip[indexJx, n] = dEdc_pc[0]
-            dgdc_2ip[indexJy, n] = dEdc_pc[1]
+            #print(dForcedc_pc)
+            indexIPositionX = self.i_p[n]*2
+            indexIPositionY = self.i_p[n]*2+1
+            indexJPosX = self.j_p[n]*2
+            indexJPosY = self.j_p[n]*2+1
+            dgdc_2ip[indexIPositionX, n] = (rijCurrent_p[n] - beamlengths_p[n]) * ((rijCurrent_pc[n,0].T / rijCurrent_p[n]).T)
+            dgdc_2ip[indexIPositionY, n] = (rijCurrent_p[n] - beamlengths_p[n]) * ((rijCurrent_pc[n,1].T / rijCurrent_p[n]).T)
+            dgdc_2ip[indexJPosX, n] = (rijCurrent_p[n] - beamlengths_p[n]) * ((rijCurrent_pc[n,0].T / rijCurrent_p[n]).T)
+            dgdc_2ip[indexJPosY, n] = (rijCurrent_p[n] - beamlengths_p[n]) * ((rijCurrent_pc[n,1].T / rijCurrent_p[n]).T)
+        print(dgdc_2ip)
+        print(lambda_2i)
+        aa = np.matmul(lambda_2i, -dgdc_2ip)
         # return sensitivity = dg/dc + df/dc + dr/dc(df/dr+dg/dr)
         # df/dc=0, df/dr+dg/dr=0 -> dr/dc(df/dr+dg/dr)=0
-        return np.matmul(lambda_2i, dgdc_2ip)
+        return np.matmul(lambda_2i, -dgdc_2ip)
 
 class Angle:
     def __init__(self, c_t, i_t, j_t, k_t):
