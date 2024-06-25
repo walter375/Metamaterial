@@ -13,8 +13,11 @@ import numpy as np
 # k_t = np.array([0,6,8,1,4,8,9,5,2,2,3,7,4,6,10,10,6,14,12,12,14,16,12,16,18,10,19,19,13,19,13,17,15,13,15,7,5,9,11,11,9,11])  # containing second end point
 
 r_orig_ic = np.array([[0,0], [0,2], [0,4], [1.5,1], [1.5,3], [2,0.5], [2,3.5], [2.25,2], [2.5,1.5], [2.5,2.5], [3,0.5], [3,3.5], [3.5,1], [3.5,3], [3.75,1.5], [3.75,2.5]], dtype=float)  # shape=(nb_positions, 2)
+posDisplaced = 1
+dimDisplaced = 0
+distanceDisplaced = 0.8
 diff = np.zeros_like(r_orig_ic)
-diff[1,0] += 0.8
+diff[posDisplaced, dimDisplaced] += distanceDisplaced
 r_stressed_ic = r_orig_ic + diff
 # pairs
 i_p = np.array([0,1,1,2, 3,3,4,4,5, 8,7,6,5,6, 10,9,11,10,12, 13,12,8,15,13])

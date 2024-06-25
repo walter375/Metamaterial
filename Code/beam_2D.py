@@ -11,7 +11,10 @@ suffix:
         _c: cartesian (2D, x & y)
 """
 class Beam:
-    def __init__(self, c_p, i_p, j_p, r_orig_ic, r_stressed_ic, border, x, y):
+    def __init__(self, c_p, i_p, j_p,
+                 r_orig_ic, r_stressed_ic,
+                 border, x, y,
+                 posDisplaced, dimDisplaced):
         self.c_p = c_p
         self.i_p = i_p
         self.j_p = j_p
@@ -20,6 +23,8 @@ class Beam:
         self.border = border
         self.x = x
         self.y = y
+        self.posDisplaced = posDisplaced
+        self.dimDisplaced = dimDisplaced
 
 
     def UBeam(self, r_ic, beamlengths_p):
@@ -142,18 +147,12 @@ class Beam:
         # print("gradient:\n", gradient)
         hessian = self.getHessianBeam(r_current_ic, beamlengths_p)
         #print(hessian.shape, dfdr.shape)
-        for i in range(len(self.border)):
-            # fix position 0 for over constraining the hessian
-            hessian[0]= 0
-            hessian[1] = 0
-            hessian[:,0] = 0
-            hessian[:,1] = 0
-            hessian[0, 0] = 1
-            hessian[1,1] = 1
-            hessian[-1] = 0
-            hessian[:, -1] = 0
-            hessian[-1, -1] = 1
-            dfdr[-1, dim] = -(r_current_ic[-1,dim] - r_orig_ic[-1,dim])
+        hessianConstrained = constrainHessian(hessian,
+                                              self.border,
+                                              self.posDisplaced,
+                                              self.dimDisplaced)
+
+        dfdr[self.posDisplaced, dim] = -(r_current_ic[self.posDisplaced,dim] - r_orig_ic[self.posDisplaced,dim])
         lambda_2i=scipy.sparse.linalg.cg(hessian,
                                          -dfdr.flatten(),
                                          lambda_2i,
@@ -195,8 +194,8 @@ class Beam:
             dgdc_2ip[indexIPositionY, n] = (rijCurrent_p[n] - beamlengths_p[n]) * ((rijCurrent_pc[n,1].T / rijCurrent_p[n]).T)
             dgdc_2ip[indexJPosX, n] = (rijCurrent_p[n] - beamlengths_p[n]) * ((rijCurrent_pc[n,0].T / rijCurrent_p[n]).T)
             dgdc_2ip[indexJPosY, n] = (rijCurrent_p[n] - beamlengths_p[n]) * ((rijCurrent_pc[n,1].T / rijCurrent_p[n]).T)
-        print(dgdc_2ip)
-        print(lambda_2i)
+        # print(dgdc_2ip)
+        # print(lambda_2i)
         aa = np.matmul(lambda_2i, -dgdc_2ip)
         # return sensitivity = dg/dc + df/dc + dr/dc(df/dr+dg/dr)
         # df/dc=0, df/dr+dg/dr=0 -> dr/dc(df/dr+dg/dr)=0
@@ -465,8 +464,8 @@ def getCosAngles(r_ic, i_t, j_t, k_t):
     return angles_t
 
 #todo test
-def getBorderPoints(r_ic, left=True, right=True, lower=False, upper=False):
-    # get indices of max and min points in ric_flat,
+def getBorderPoints(r_ic, posDisplaced, left=True, right=True, lower=False, upper=False):
+    # get indices of max               and min points in ric_flat,
     # xmax = right, ymax = upper, xmin = left, ymin = lower
     xmax, ymax = np.max(r_ic, axis=0)
     xmin, ymin = np.min(r_ic, axis=0)
@@ -487,7 +486,7 @@ def getBorderPoints(r_ic, left=True, right=True, lower=False, upper=False):
         rows, cols = np.where(r_ic == ymin)
         lower = rows[np.where(cols == 1)]
         border = np.append(border, lower)
-    border = np.sort(border)
+    border = np.sort(np.append(border, posDisplaced))
     return border
 def ricFlat(r_ic,border, x=False, y=False):
     """
@@ -535,6 +534,40 @@ def conLen(ric_flat):
     len1 = getBeamLength(r_ic, i_p, j_p)
     # print(len1-len0)
     return len1 - len0
+
+def constrainHessian(hessian, border, posDisplaced, dimDisplaced):
+    hessian[2 * border] = 0
+    hessian[2 * border + 1] = 0
+
+    hessian[:, 2 * border] = 0
+    hessian[:, 2 * border + 1] = 0
+
+    hessian[2 * border, 2 * border] = 1
+    hessian[2 * border + 1, 2 * border + 1] = 1
+
+    if (dimDisplaced == 0):
+        index = 2 * posDisplaced
+        hessian[index] = 0
+        hessian[:, index] = 0
+        hessian[index, index] = 1
+    elif (dimDisplaced == 1):
+        index = 2 * posDisplaced + 1
+        hessian[index] = 0
+        hessian[:, index] = 0
+        hessian[index, index] = 1
+    elif (dimDisplaced == 2):
+        # for x dimension
+        index = 2 * posDisplaced
+        hessian[index] = 0
+        hessian[:, index] = 0
+        hessian[index, index] = 1
+        # for y dimension
+        index = 2 * posDisplaced + 1
+        hessian[index] = 0
+        hessian[:, index] = 0
+        hessian[index, index] = 1
+
+    return hessian
 def runOptimizer(function, x0, arguments, cons={}, gradient=None, hessian=None, print=1):
     res = scipy.optimize.minimize(function, x0=x0,  args=(arguments), constraints=cons, jac=gradient, hess=hessian) #method='l-bfgs-b',
     return res.x
@@ -561,9 +594,12 @@ def plotResults(points1, points2, points3, points4):
 
 if __name__ == "__main__":
 
-    # from Structures import structure1 as s1
+    from Structures import structure1 as s1
     # r_orig_ic = s1.r_orig_ic
     # r_stressed_ic = s1.r_stressed_ic
+    # posDisplaced = s1.posDisplaced
+    # dimDisplaced = s1.dimDisplaced
+    # distanceDisplaced = s1.distanceDisplaced
     # i_p = s1.i_p
     # j_p = s1.j_p
     # # all displacements, roptimizer_ic - r_orig_ic
@@ -636,6 +672,9 @@ if __name__ == "__main__":
 
     # r_orig_ic = s2.r_orig_ic
     # r_stressed_ic = s2.r_stressed_ic
+    # posDisplaced = s2.posDisplaced
+    # dimDisplaced = s2.dimDisplaced
+    # distanceDisplaced = s2.distanceDisplaced
     # i_p = s2.i_p
     # j_p = s2.j_p
     # i_t = s2.i_t
@@ -680,6 +719,9 @@ if __name__ == "__main__":
 
     # r_orig_ic = s3.r_orig_ic
     # r_stressed_ic = s3.r_stressed_ic
+    # posDisplaced = s3.posDisplaced
+    # dimDisplaced = s3.dimDisplaced
+    # distanceDisplaced = s3.distanceDisplaced
     # i_p = s3.i_p
     # j_p = s3.j_p
     # i_a_t = s3.i_a_t
@@ -734,6 +776,9 @@ if __name__ == "__main__":
 
     # r_orig_ic = im.r_orig_ic
     # r_stressed_ic = im.r_stressed_ic
+    # posDisplaced = im.posDisplaced
+    # dimDisplaced = im.dimDisplaced
+    # distanceDisplaced = im.distanceDisplaced
     # i_p = im.i_p
     # j_p = im.j_p
     # i_t = im.i_t
@@ -779,6 +824,9 @@ if __name__ == "__main__":
 
     from Structures import gripperWithHinges as g
     r_orig_ic = g.r_orig_ic
+    posDisplaced = g.posDisplaced
+    dimDisplaced = g.dimDisplaced
+    distanceDisplaced = g.distanceDisplaced
     r_stressed_ic = g.r_stressed_ic
     i_p = g.i_p
     j_p = g.j_p
@@ -797,7 +845,10 @@ if __name__ == "__main__":
     ''' beams '''
     beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
     c_p = np.ones(nb_bodies)
-    beam = Beam(c_p, i_p, j_p, r_orig_ic, r_stressed_ic, getBorderPoints(r_stressed_ic, left, right), x, y)
+    beam = Beam(c_p, i_p, j_p,
+                r_orig_ic, r_stressed_ic,
+                getBorderPoints(r_stressed_ic, posDisplaced,1,0,0,0),
+                x, y, posDisplaced, dimDisplaced)
     ''' angles '''
     c_t = np.ones(nb_angles)
     angle = Angle(c_t, i_t, j_t, k_t)
@@ -806,7 +857,6 @@ if __name__ == "__main__":
     ''' beam angle combination '''
     ba = BeamAngle(beam, angle)
     ''' optimizer '''
-    beam.border = np.sort(np.append(beam.border,6))  # add point 3 to points to be fixed
     ric_flat = ricFlat(r_stressed_ic, beam.border, x, y)
     optPos1 = 10
     optPos2 = None
@@ -858,6 +908,9 @@ if __name__ == "__main__":
     from Structures import Auxetic as g
     # r_orig_ic = g.r_orig_ic
     # r_stressed_ic = g.r_stressed_ic
+    # posDisplaced = g.posDisplaced
+    # dimDisplaced = g.dimDisplaced
+    # distanceDisplaced = g.distanceDisplaced
     # i_p = g.i_p
     # j_p = g.j_p
     # i_t = g.i_t
@@ -904,6 +957,9 @@ if __name__ == "__main__":
     from Structures import gripperWithoutHinges as g
     # r_orig_ic = g.r_orig_ic
     # r_stressed_ic = g.r_stressed_ic
+    # posDisplaced = g.posDisplaced
+    # dimDisplaced = g.dimDisplaced
+    # distanceDisplaced = g.distanceDisplaced
     # i_p = g.i_p
     # j_p = g.j_p
     # i_t = g.i_t

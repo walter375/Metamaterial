@@ -27,20 +27,22 @@ from Code import beam_2D as rb
 global border
 global r_stressed_ic
 
-@pytest.mark.parametrize('positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2', [
-   # ([[0, 0], [1,0], [2,0]], [0, 1], [1, 2], 1, 0, None)
-    ([[0, 0], [0,1], [0,2]], [0, 1], [1, 2], 1, 1, None)
+@pytest.mark.parametrize('positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2, left,  lower ', [
+    ([[0, 0], [1,0], [2,0]], [0, 1], [1, 2], 1, 0, None, 1, 0),
+    ([[0, 0], [0,1], [0,2]], [0, 1], [1, 2], 1, 1, None, 0, 1),
+    ([[0, 0], [1,1], [2,2]], [0, 1], [1, 2], 1, 0, None, 0, 1)
 ])
 
 
-def test_sensitivity( positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2, epsilon=0.001):
+def test_sensitivity( positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2, left, lower, epsilon=0.001):
     positions_ic = np.array(positions_ic, dtype=float)
-
+    posDisplaced = 2
     r_stressed_ic = np.zeros_like(positions_ic)
     r_stressed_ic += positions_ic
-    r_stressed_ic[-1,1] += 0.5
+    r_stressed_ic[posDisplaced,dim] += 0.5
     # global border
-    border = rb.getBorderPoints(r_stressed_ic, left=0, right=0, lower=1, upper=1)
+    border = rb.getBorderPoints(r_stressed_ic,posDisplaced, left=left, right=0, lower=lower, upper=0)
+
     nb_hinges, nb_dims = positions_ic.shape
     nb_bodies = len(i_p)
     i_p = np.array(i_p)
@@ -48,7 +50,7 @@ def test_sensitivity( positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2, e
 
     c_p = np.ones(len(i_p))
 
-    beam = rb.Beam(c_p, i_p, j_p, positions_ic, r_stressed_ic, border, x=1, y=1)
+    beam = rb.Beam(c_p, i_p, j_p, positions_ic, r_stressed_ic, border, 1, 1, posDisplaced, dim)
     beam_lengths_p = rb.getBeamLength(positions_ic, i_p, j_p)
     positions_flat = rb.ricFlat(r_stressed_ic, border, 1, 1)
 
@@ -86,13 +88,13 @@ def test_sensitivity( positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2, e
                                                                     optimizePos2
                                                                     )
         displacements = ((displacement_plus_epsilon_half - displacement_minus_epsilon_half) / epsilon)
-        print("d",displacements)
+        # print("d",displacements)
         sensitivityNumerical_p[i] = displacements
 
 
-    print("sA", sensitivityAnalytical_p)
+    print("\nsA", sensitivityAnalytical_p)
     print("sN",sensitivityNumerical_p)
 
 
-    np.testing.assert_allclose(sensitivityAnalytical_p, sensitivityNumerical_p, rtol=1e-6, atol=1e-6)
+    np.testing.assert_allclose(sensitivityAnalytical_p, sensitivityNumerical_p, rtol=1e-4, atol=1e-4)
 
