@@ -116,8 +116,13 @@ class Beam:
         roptimizer_ic = ricUnflat(roptimizer_ic, self.r_stressed_ic, self.border, self.x, self.y)
         # point moves forward(righ/up) -> difference is positive,
         # point moves backward(left/down) -> difference is negative
+        displacements_ic = (roptimizer_ic - r_orig_ic) ** 2
+        print(roptimizer_ic[optimizePos1] - r_orig_ic[optimizePos1])
+
+        # f, ax1= plt.subplots(1, 1, sharex=all, sharey=all)
+        # for i, j in zip(i_p, j_p):
+        #     ax1.plot([roptimizer_ic[i][0], roptimizer_ic[j][0]], [roptimizer_ic[i][1], roptimizer_ic[j][1]], 'ok-')
         if (optimizePos2 is None):
-            displacements_ic = (roptimizer_ic - r_orig_ic) ** 2
             # print("return value:\n", displacements_ic[optimizePos1, dim])
             # print("return value:\n", roptimizer_ic[optimizePos1, dim])
             if dim == 2:
@@ -126,8 +131,9 @@ class Beam:
             else:
                 # return either x or y
                 return displacements_ic[optimizePos1, dim]
+
         else:
-            displacements_ic =(roptimizer_ic - r_orig_ic)**2
+
             if dim == 2:
                 distance = (displacements_ic[optimizePos1] - displacements_ic[optimizePos2])
             else:
@@ -638,7 +644,7 @@ if __name__ == "__main__":
     left = 1
     right = 0
 
-    border, borderWithoutPosDisplaced = getBorderPoints(r_orig_ic, posDisplaced, 1, 1, 0, 0)
+    border, borderWithoutPosDisplaced = getBorderPoints(r_orig_ic, posDisplaced, 0, 0, 1, 0)
     beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
     c_p = np.ones(nb_bodies)
     beam = Beam(c_p, i_p, j_p, r_orig_ic, r_stressed_ic, border, borderWithoutPosDisplaced, x, y, posDisplaced, dimDisplaced)
@@ -653,7 +659,7 @@ if __name__ == "__main__":
     cOptimize = scipy.optimize.minimize(beam.displacementObjective,
                                         x0=c0_p,
                                         args=(ric_flat, beamlengths_p, r_orig_ic, optPos, dim),
-                                        #jac=beam.displacementSensitivityObjective,
+                                        jac=beam.displacementSensitivityObjective,
                                         bounds=stiffness_bounds,
                                         method='l-bfgs-b',
                                         options={'gtol': 1e-10,
@@ -669,7 +675,7 @@ if __name__ == "__main__":
     cOptimize = scipy.optimize.minimize(beam.displacementObjective,
                                         x0=c0_p,
                                         args=(ric_flat, beamlengths_p, r_orig_ic, optPos, dim),
-                                        #jac=beam.displacementSensitivityObjective,
+                                        jac=beam.displacementSensitivityObjective,
                                         bounds=stiffness_bounds,
                                         method='l-bfgs-b',
                                         options={'gtol': 1e-10,
