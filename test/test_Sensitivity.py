@@ -24,24 +24,28 @@ import numpy as np
 import pytest
 from Code import beam_2D as rb
 
-global border
-global r_stressed_ic
 
 @pytest.mark.parametrize('positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2, left,  lower ', [
     ([[0, 0], [1,0], [2,0]], [0, 1], [1, 2], 1, 0, None, 1, 0),
     ([[0, 0], [0,1], [0,2]], [0, 1], [1, 2], 1, 1, None, 0, 1),
-    ([[0, 0], [1,1], [2,2]], [0, 1], [1, 2], 1, 0, None, 0, 1)
+    ([[0, 0], [1,1], [2,2]], [0, 1], [1, 2], 1, 2, None, 1, 0),
+    ([[0, 0], [1,1], [2,2]], [0, 1], [1, 2], 1, 0, None, 1, 0)
 ])
-
 
 def test_sensitivity( positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2, left, lower, epsilon=0.001):
     positions_ic = np.array(positions_ic, dtype=float)
     posDisplaced = 2
     r_stressed_ic = np.zeros_like(positions_ic)
     r_stressed_ic += positions_ic
-    r_stressed_ic[posDisplaced,dim] += 0.5
+    if dim == 0:
+        r_stressed_ic[posDisplaced, 0] += 0.5
+    if dim == 1:
+        r_stressed_ic[posDisplaced, 1] += 0.5
+    if dim == 2:
+        r_stressed_ic[posDisplaced] += 0.5
+
     # global border
-    border = rb.getBorderPoints(r_stressed_ic,posDisplaced, left=left, right=0, lower=lower, upper=0)
+    border, borderWithoutPosDisplaced = rb.getBorderPoints(r_stressed_ic,posDisplaced, left=left, right=0, lower=lower, upper=0)
 
     nb_hinges, nb_dims = positions_ic.shape
     nb_bodies = len(i_p)
@@ -50,7 +54,7 @@ def test_sensitivity( positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2, l
 
     c_p = np.ones(len(i_p))
 
-    beam = rb.Beam(c_p, i_p, j_p, positions_ic, r_stressed_ic, border, 1, 1, posDisplaced, dim)
+    beam = rb.Beam(c_p, i_p, j_p, positions_ic, r_stressed_ic, border, borderWithoutPosDisplaced, 1, 1, posDisplaced, dim)
     beam_lengths_p = rb.getBeamLength(positions_ic, i_p, j_p)
     positions_flat = rb.ricFlat(r_stressed_ic, border, 1, 1)
 
@@ -88,8 +92,12 @@ def test_sensitivity( positions_ic, i_p, j_p, optimizePos1, dim, optimizePos2, l
                                                                     optimizePos2
                                                                     )
         displacements = ((displacement_plus_epsilon_half - displacement_minus_epsilon_half) / epsilon)
-        # print("d",displacements)
-        sensitivityNumerical_p[i] = displacements
+        print("d",displacements)
+        if dim == 2:
+            sensitivityNumerical_p[i] = np.sum(displacements)
+
+        else:
+            sensitivityNumerical_p[i] = displacements
 
 
     print("\nsA", sensitivityAnalytical_p)

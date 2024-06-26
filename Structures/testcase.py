@@ -1,15 +1,20 @@
 """
-    0---1---2
+    0---1---2---3
 """
 import numpy as np
 # test case
-r_orig_ic = np.array([[0,0],[1,0],[2,0]], dtype=float)
-i_p = np.array([0,1])
-j_p = np.array([1,2])
+r_orig_ic = np.array([[0,0],[1,0],[2,0],[3,0]], dtype=float)
+i_p = np.array([0,1,2])
+j_p = np.array([1,2,3])
 
 posDisplaced = 2
-dimDisplaced = 0
-distanceDisplaced = 1
+dimDisplaced = 1
+distanceDisplaced = 0.1
 diff = np.zeros_like(r_orig_ic)
-diff[posDisplaced, dimDisplaced] += distanceDisplaced
+if dimDisplaced == 0:
+    diff[posDisplaced, 0] += distanceDisplaced
+if dimDisplaced == 1:
+    diff[posDisplaced, 1] += distanceDisplaced
+if dimDisplaced == 2:
+    diff[posDisplaced] += distanceDisplaced
 r_stressed_ic = r_orig_ic + diff
