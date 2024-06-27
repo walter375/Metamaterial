@@ -628,68 +628,6 @@ def plotResults(points1, points2, points3, points4):
     plt.show()
 
 if __name__ == "__main__":
-    from Structures import testcase as t
-    r_orig_ic = t.r_orig_ic
-    r_stressed_ic = t.r_stressed_ic
-    posDisplaced = t.posDisplaced
-    dimDisplaced = t.dimDisplaced
-    distanceDisplaced = t.distanceDisplaced
-    i_p = t.i_p
-    j_p = t.j_p
-    nb_bodies = i_p.shape[0]
-    nb_positions = r_orig_ic.shape[0]
-    # modifications
-    x = 1
-    y = 1
-    left = 1
-    right = 0
-
-    border, borderWithoutPosDisplaced = getBorderPoints(r_orig_ic, posDisplaced, 0, 0, 1, 0)
-    beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
-    c_p = np.ones(nb_bodies)
-    beam = Beam(c_p, i_p, j_p, r_orig_ic, r_stressed_ic, border, borderWithoutPosDisplaced, x, y, posDisplaced, dimDisplaced)
-
-    ric_flat = ricFlat(r_stressed_ic, border, x, y)
-    p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
-    c0_p = np.random.rand(nb_bodies)*100
-    optPos = 1
-    dim = 0
-    # rOptimized_flat = ricFlat(p1, border, x, y)
-    stiffness_bounds = scipy.optimize.Bounds(lb=0.1, ub=1000, keep_feasible=True)
-    cOptimize = scipy.optimize.minimize(beam.displacementObjective,
-                                        x0=c0_p,
-                                        args=(ric_flat, beamlengths_p, r_orig_ic, optPos, dim),
-                                        jac=beam.displacementSensitivityObjective,
-                                        bounds=stiffness_bounds,
-                                        method='l-bfgs-b',
-                                        options={'gtol': 1e-10,
-                                                 'disp': True,
-                                                 'maxiter': 1000})
-    print("cOptimize", cOptimize.x)
-    beam.c_p = cOptimize.x
-    p2 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
-    optPos = 1
-    dim = 1
-    # rOptimized_flat = ricFlat(p1, border, x, y)
-    stiffness_bounds = scipy.optimize.Bounds(lb=0.1, ub=1000, keep_feasible=True)
-    cOptimize = scipy.optimize.minimize(beam.displacementObjective,
-                                        x0=c0_p,
-                                        args=(ric_flat, beamlengths_p, r_orig_ic, optPos, dim),
-                                        jac=beam.displacementSensitivityObjective,
-                                        bounds=stiffness_bounds,
-                                        method='l-bfgs-b',
-                                        options={'gtol': 1e-10,
-                                                 'disp': True,
-                                                 'maxiter': 1000})
-    print("cOptimize", cOptimize.x)
-    beam.c_p = cOptimize.x
-    p3 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
-
-    #p3 = np.zeros_like(p2)
-    p4 = np.zeros_like(p2)
-    plotResults(p1,p2,p3,p4)
-    r_current= ricUnflat(p2, r_stressed_ic, border, x, y)
-    print(r_current[optPos]-r_orig_ic[optPos])
     from Structures import structure1 as s1
     # r_orig_ic = s1.r_orig_ic
     # r_stressed_ic = s1.r_stressed_ic
@@ -836,11 +774,15 @@ if __name__ == "__main__":
     # x = 1
     # y = 0
     # left = 1
-    # right = 1
-    # # stiffness_beam = 10
+    # right = 0
+    #
+    # border, borderWithoutPosDisplaced = getBorderPoints(r_orig_ic, posDisplaced, 0, 0, 1, 0)
+    #
     # ''' beams '''
     # c_p = np.ones(nb_bodies)
-    # beam = Beam(c_p, i_p, j_p)
+    # beam = Beam(c_p, i_p, j_p, r_orig_ic, r_stressed_ic,
+    #             border, borderWithoutPosDisplaced, x, y,
+    #             posDisplaced, dimDisplaced)
     # beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
     # ''' angles '''
     # c_a_t = np.ones(nb_angles)
@@ -859,6 +801,8 @@ if __name__ == "__main__":
     # border = getBorderPoints(r_stressed_ic, left, right)
     # ric_flat = ricFlat(r_stressed_ic,border, x, y)
     # p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
+    #
+    #
     # p2 = runOptimizer(triplet.UTripletObjective, ric_flat, (beamlengths_ij_t, beamlengths_kj_t, beamlengths_ik_t), cons={}, gradient=triplet.gradientUTripletObjective)
     # stiffness_angle1 = 10
     # stiffness_beam1 = 1
@@ -1118,3 +1062,140 @@ if __name__ == "__main__":
     # p4 = runOptimizer(ba.UBeamAngleObjective, ric_flat, (beamlengths_p, cos0_t), cons={}, gradient=ba.gradientUBeamAngleObjective)
     # plotResults(p1, p2, p3, p4)
 
+    """ Optimization"""
+    from Structures import testcase as t
+
+    # r_orig_ic = t.r_orig_ic
+    # r_stressed_ic = t.r_stressed_ic
+    # posDisplaced = t.posDisplaced
+    # dimDisplaced = t.dimDisplaced
+    # distanceDisplaced = t.distanceDisplaced
+    # i_p = t.i_p
+    # j_p = t.j_p
+    # nb_bodies = i_p.shape[0]
+    # nb_positions = r_orig_ic.shape[0]
+    # # modifications
+    # x = 1
+    # y = 1
+    # left = 1
+    # right = 0
+    #
+    # border, borderWithoutPosDisplaced = getBorderPoints(r_orig_ic, posDisplaced, 0, 0, 1, 0)
+    # beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
+    # c_p = np.ones(nb_bodies)
+    # beam = Beam(c_p, i_p, j_p, r_orig_ic, r_stressed_ic, border, borderWithoutPosDisplaced, x, y, posDisplaced,
+    #             dimDisplaced)
+    #
+    # ric_flat = ricFlat(r_stressed_ic, border, x, y)
+    # p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
+    # c0_p = np.random.rand(nb_bodies) * 100
+    # optPos = 1
+    # dim = 0
+    # # rOptimized_flat = ricFlat(p1, border, x, y)
+    # stiffness_bounds = scipy.optimize.Bounds(lb=0.1, ub=1000, keep_feasible=True)
+    # cOptimize = scipy.optimize.minimize(beam.displacementObjective,
+    #                                     x0=c0_p,
+    #                                     args=(ric_flat, beamlengths_p, r_orig_ic, optPos, dim),
+    #                                     jac=beam.displacementSensitivityObjective,
+    #                                     bounds=stiffness_bounds,
+    #                                     method='l-bfgs-b',
+    #                                     options={'gtol': 1e-10,
+    #                                              'disp': True,
+    #                                              'maxiter': 1000})
+    # print("cOptimize", cOptimize.x)
+    # beam.c_p = cOptimize.x
+    # p2 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
+    # optPos = 1
+    # dim = 1
+    # # rOptimized_flat = ricFlat(p1, border, x, y)
+    # stiffness_bounds = scipy.optimize.Bounds(lb=0.1, ub=1000, keep_feasible=True)
+    # cOptimize = scipy.optimize.minimize(beam.displacementObjective,
+    #                                     x0=c0_p,
+    #                                     args=(ric_flat, beamlengths_p, r_orig_ic, optPos, dim),
+    #                                     jac=beam.displacementSensitivityObjective,
+    #                                     bounds=stiffness_bounds,
+    #                                     method='l-bfgs-b',
+    #                                     options={'gtol': 1e-10,
+    #                                              'disp': True,
+    #                                              'maxiter': 1000})
+    # print("cOptimize", cOptimize.x)
+    # beam.c_p = cOptimize.x
+    # p3 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
+    #
+    # # p3 = np.zeros_like(p2)
+    # p4 = np.zeros_like(p2)
+    # plotResults(p1, p2, p3, p4)
+    # r_current = ricUnflat(p2, r_stressed_ic, border, x, y)
+    # print(r_current[optPos] - r_orig_ic[optPos])
+
+    """ Structure 3 """
+    r_orig_ic = s3.r_orig_ic
+    r_stressed_ic = s3.r_stressed_ic
+    posDisplaced = s3.posDisplaced
+    dimDisplaced = s3.dimDisplaced
+    distanceDisplaced = s3.distanceDisplaced
+    i_p = s3.i_p
+    j_p = s3.j_p
+
+    nb_bodies = i_p.shape[0]
+    nb_positions = r_orig_ic.shape[0]
+
+    # modifications
+    x = 1
+    y = 1
+    left = 1
+    right = 0
+    lower = 0
+    upper = 0
+    ''' optimizer '''
+    border, borderWithoutPosDisplaced = getBorderPoints(r_orig_ic, posDisplaced, left, right, lower, upper)
+    ric_flat = ricFlat(r_stressed_ic, border, x, y)
+
+    ''' beams '''
+    c_p = np.ones(nb_bodies)
+    beam = Beam(c_p, i_p, j_p, r_orig_ic, r_stressed_ic,
+                border, borderWithoutPosDisplaced, x, y,
+                posDisplaced, dimDisplaced)
+    beamlengths_p = getBeamLength(r_orig_ic, i_p, j_p)
+
+
+    p1 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
+    c0_p = c_p #np.random.rand(nb_bodies) * 100
+    optPos = 10
+    dim = 0
+    # rOptimized_flat = ricFlat(p1, border, x, y)
+    stiffness_bounds = scipy.optimize.Bounds(lb=0.1, ub=1000, keep_feasible=True)
+    cOptimize = scipy.optimize.minimize(beam.displacementObjective,
+                                        x0=c0_p,
+                                        args=(ric_flat, beamlengths_p, r_orig_ic, optPos, dim),
+                                        jac=beam.displacementSensitivityObjective,
+                                        bounds=stiffness_bounds,
+                                        method='l-bfgs-b',
+                                        options={'gtol': 1e-10,
+                                                 'disp': True,
+                                                 'maxiter': 1000})
+    print("cOptimize", cOptimize.x)
+    beam.c_p = cOptimize.x
+    p2 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
+    optPos = 10
+    dim = 1
+    # rOptimized_flat = ricFlat(p1, border, x, y)
+    stiffness_bounds = scipy.optimize.Bounds(lb=0.1, ub=1000, keep_feasible=True)
+    cOptimize = scipy.optimize.minimize(beam.displacementObjective,
+                                        x0=c0_p,
+                                        args=(ric_flat, beamlengths_p, r_orig_ic, optPos, dim),
+                                        jac=beam.displacementSensitivityObjective,
+                                        bounds=stiffness_bounds,
+                                        method='l-bfgs-b',
+                                        options={'gtol': 1e-10,
+                                                 'disp': True,
+                                                 'maxiter': 1000})
+    print("cOptimize", cOptimize.x)
+    beam.c_p = cOptimize.x
+    p3 = runOptimizer(beam.UBeamObjective, ric_flat, beamlengths_p, cons={}, gradient=beam.gradientUBeamObjective)
+
+    # p3 = np.zeros_like(p2)
+    p4 = np.zeros_like(p2)
+    plotResults(p1, p2, p3, p4)
+    r_current = ricUnflat(p2, r_stressed_ic, border, x, y)
+    print(r_current[optPos] - r_orig_ic[optPos])
