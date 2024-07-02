@@ -1,12 +1,23 @@
+"""
+         6 ------- 7
+           \    /
+        2--3   4--5
+          /     \
+        0 ------- 1
+"""
+
 import numpy as np
 r_orig_ic = np.array([[0.5, 0], [2.25, 0], [0.5,1], [1.25,1], [1.5,1], [2.25,1], [0.5, 2], [2.25, 2]], dtype=float)  # shape=(nb_positions, 2)
 diff = np.zeros_like(r_orig_ic)
 
-posDisplaced = 5
+posDisplaced1 = 2
+posDisplaced2 = 5
+posDisplaced = np.array([posDisplaced1, posDisplaced2])
 dimDisplaced = 0
 distanceDisplaced = 0.5
 diff = np.zeros_like(r_orig_ic)
-diff[posDisplaced, dimDisplaced] += distanceDisplaced
+diff[posDisplaced1, dimDisplaced] -= distanceDisplaced
+diff[posDisplaced2, dimDisplaced] += distanceDisplaced
 r_stressed_ic = r_orig_ic + diff
 # pairs
 i_p = np.array([0,3,1,2,4,3,4,6])

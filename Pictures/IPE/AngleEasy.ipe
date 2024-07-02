@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE ipe SYSTEM "ipe.dtd">
 <ipe version="70218" creator="Ipe 7.2.24">
-<info created="D:20240429113055" modified="D:20240429204012"/>
+<info created="D:20240702142419" modified="D:20240702144422"/>
 <ipestyle name="basic">
 <symbol name="arrow/arc(spx)">
 <path stroke="sym-stroke" fill="sym-stroke" pen="sym-pen">
@@ -312,54 +312,92 @@ h
 <page>
 <layer name="alpha"/>
 <view layers="alpha" active="alpha"/>
-<path layer="alpha" stroke="black" fill="black" pen="fat">
-128 704 m
-192 704 l
+<path layer="alpha" stroke="black">
+192 576 m
+128 512 l
+192 512 l
 </path>
-<path stroke="black" fill="black" pen="fat">
-192 704 m
-256 704 l
+<path stroke="black" arrow="normal/tiny" rarrow="normal/tiny">
+176 512 m
+48 0 0 48 128 512 161.941 545.941 a
 </path>
-<path stroke="black" fill="black" pen="fat">
-256 704 m
-320 704
-320 704 c
+<text transformations="translations" pos="176 528" stroke="black" type="label" width="14.786" height="2.147" depth="2.71" valign="baseline" size="tiny" style="math">\alpha_{ijk}</text>
+<use name="mark/fdisk(sfx)" pos="128 512" size="normal" stroke="black"/>
+<use name="mark/fdisk(sfx)" pos="192 576" size="normal" stroke="black"/>
+<use name="mark/fdisk(sfx)" pos="192 512" size="normal" stroke="black"/>
+<text matrix="1 0 0 1 -4 -8" transformations="translations" pos="128 512" stroke="black" type="label" width="7.066" height="2.147" depth="2.57" valign="baseline" size="tiny" style="math">r_{j}</text>
+<text matrix="1 0 0 1 -4 -8" transformations="translations" pos="192 512" stroke="black" type="label" width="7.699" height="2.148" depth="1.74" valign="baseline" size="tiny" style="math">r_{k}</text>
+<text matrix="1 0 0 1 -4 4" transformations="translations" pos="192 576" stroke="black" type="label" width="6.5" height="2.149" depth="1.6" valign="baseline" size="tiny" style="math">r_{i}</text>
+<text matrix="1 0 0 1 0 16" transformations="translations" pos="144 480" stroke="black" type="label" width="28.096" height="3.411" depth="2.31" valign="baseline" size="tiny" style="math">E_{\mathrm{pot}} =  0</text>
+<path stroke="black">
+256 512 m
+320 512 l
 </path>
-<text matrix="1 0 0 1 -25.4785 4.76627" transformations="translations" pos="176 704" stroke="black" type="label" width="13.362" height="6.227" depth="0" valign="baseline" size="small">sb0</text>
-<text matrix="1 0 0 1 39.1158 5.46886" transformations="translations" pos="176 704" stroke="black" type="label" width="13.362" height="6.227" depth="0" valign="baseline" size="small">sb1</text>
-<text matrix="1 0 0 1 103.008 5.81991" transformations="translations" pos="176 704" stroke="black" type="label" width="13.362" height="6.227" depth="0" valign="baseline" size="small">sb2</text>
-<path stroke="black" pen="fat">
-128 752 m
-128 656 l
+<use name="mark/fdisk(sfx)" pos="320 512" size="normal" stroke="black" fill="white"/>
+<text matrix="1 0 0 1 4 20" transformations="translations" pos="272 576" stroke="black" type="label" width="6.5" height="4.781" depth="2.9" valign="baseline" size="tiny" style="math">r_{i}&apos;</text>
+<text matrix="1 0 0 1 -4 -8" transformations="translations" pos="256 512" stroke="black" type="label" width="7.066" height="2.147" depth="2.57" valign="baseline" size="tiny" style="math">r_{j}</text>
+<text matrix="1 0 0 1 -4 -8" transformations="translations" pos="320 512" stroke="black" type="label" width="7.699" height="2.148" depth="1.74" valign="baseline" size="tiny" style="math">r_{k}</text>
+<text matrix="1 0 0 1 20 12" transformations="translations" pos="280 536" stroke="black" type="label" width="14.786" height="4.779" depth="4.01" valign="baseline" size="tiny" style="math">\alpha_{ijk}&apos;</text>
+<text matrix="1 0 0 1 0 4" transformations="translations" pos="280 492" stroke="black" type="label" width="28.096" height="3.466" depth="2.31" valign="baseline" size="tiny" style="math">E_{\mathrm{pot}} \neq 0</text>
+<text matrix="1 0 0 1 -8.03078 -0.588648" transformations="translations" pos="272.155 523.388" stroke="black" type="label" width="13.472" height="2.147" depth="2.71" valign="baseline" size="tiny" style="math">c_{ijk}</text>
+<path stroke="black">
+152.996 536.908 m
+158.308 529.035 l
+156.885 527.232 l
+161.344 528.181 l
+157.929 525.62 l
+162.197 526.473 l
+159.352 523.817 l
+163.241 524.861 l
+160.395 522.394 l
+164.284 523.343 l
+162.387 521.351 l
+166.087 511.865 l
+166.087 511.865 l
 </path>
-<path stroke="black" pen="fat">
-128 752 m
-112 736
-112 736 c
+<text matrix="1 0 0 1 -17.17 0.474309" transformations="translations" pos="162.197 521.636" stroke="black" type="label" width="13.472" height="2.147" depth="2.71" valign="baseline" size="tiny" style="math">c_{ijk}</text>
+<path matrix="1 0 0 1 3.52231 4.00262" stroke="black">
+261.432 533.506 m
+268.826 529.316 l
+267.963 526.112 l
+272.893 528.946 l
+271.044 523.893 l
+275.727 526.604 l
+273.509 521.428 l
+278.808 524.016 l
+276.22 519.58 l
+281.15 521.552 l
+279.178 518.594 l
+282.049 512.075 l
 </path>
-<path stroke="black" pen="fat">
-128 736 m
-112 720 l
+<path stroke="black">
+285.47 516.414 m
+286.984 511.828 l
 </path>
-<path stroke="black" pen="fat">
-128 720 m
-112 704 l
+<path stroke="black">
+265.439 537.267 m
+262.627 538.565 l
 </path>
-<path stroke="black" pen="fat">
-128 704 m
-112 688 l
+<path stroke="black" arrow="normal/tiny" rarrow="normal/tiny">
+308 512 m
+52 0 0 52 256 512 268.612 562.447 a
 </path>
-<path stroke="black" pen="fat">
-128 688 m
-112 672 l
+<path stroke="black">
+256 512 m
+276 592 l
+276 592 l
 </path>
-<path stroke="black" pen="fat">
-128 672 m
-112 656 l
+<use name="mark/fdisk(sfx)" pos="256 512" size="normal" stroke="black" fill="white"/>
+<use name="mark/fdisk(sfx)" pos="276 592" size="normal" stroke="black" fill="white"/>
+<path matrix="1 0 0 1 124.175 -0.831497" stroke="gray" arrow="normal/tiny" rarrow="normal/tiny">
+176 512 m
+48 0 0 48 128 512 161.941 545.941 a
 </path>
-<use name="mark/fdisk(sfx)" pos="128 704" size="large" stroke="black"/>
-<use name="mark/fdisk(sfx)" pos="192 704" size="large" stroke="black" fill="white"/>
-<use name="mark/fdisk(sfx)" pos="256 704" size="large" stroke="black" fill="white"/>
-<use name="mark/fdisk(sfx)" pos="320 704" size="large" stroke="black" fill="white"/>
+<path stroke="red" arrow="normal/tiny" rarrow="normal/tiny">
+285.984 545.211 m
+44.7439 0 0 44.7439 256 512 266.971 555.378 a
+</path>
+<text matrix="1 0 0 1 -18.5722 -4.00262" transformations="translations" pos="278.472 550.229" stroke="red" type="label" width="20.252" height="3.388" depth="2.71" valign="baseline" size="tiny" style="math">\Delta \alpha_{ijk}</text>
+<text matrix="1 0 0 1 -14.4094 0.96063" transformations="translations" pos="297.365 527.815" stroke="gray" type="label" width="14.786" height="2.147" depth="2.71" valign="baseline" size="tiny" style="math">\alpha_{ijk}</text>
 </page>
 </ipe>

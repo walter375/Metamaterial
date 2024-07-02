@@ -4,7 +4,7 @@ r_orig_ic = np.array([[0, 0], [1, 0], [0.75, 0.5], [0.01,1], [2,1], [2.25,1], [0
 
 posDisplaced = 3
 dimDisplaced = 0
-distanceDisplaced = 0.3
+distanceDisplaced = 0.9
 diff = np.zeros_like(r_orig_ic)
 diff[posDisplaced, dimDisplaced] += distanceDisplaced
 r_stressed_ic = r_orig_ic + diff

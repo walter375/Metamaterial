@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE ipe SYSTEM "ipe.dtd">
 <ipe version="70218" creator="Ipe 7.2.24">
-<info created="D:20240429114238" modified="D:20240429204409"/>
+<info created="D:20240429113055" modified="D:20240702111828"/>
 <ipestyle name="basic">
 <symbol name="arrow/arc(spx)">
 <path stroke="sym-stroke" fill="sym-stroke" pen="sym-pen">
@@ -312,78 +312,61 @@ h
 <page>
 <layer name="alpha"/>
 <view layers="alpha" active="alpha"/>
-<path layer="alpha" stroke="black" pen="fat">
-160 464 m
-192 496
-192 496 c
+<path layer="alpha" stroke="darkblue" fill="black" pen="fat">
+128 704 m
+192 704 l
 </path>
-<path stroke="black" pen="fat">
-192 496 m
-224 464 l
+<path stroke="darkblue" fill="black" pen="fat">
+192 704 m
+256 704 l
 </path>
-<path stroke="black" pen="fat">
-224 464 m
-192 432 l
+<text matrix="1 0 0 1 0 8" transformations="translations" pos="128 704" stroke="black" type="label" width="8.964" height="4.294" depth="1.49" valign="baseline" style="math">r_{0}</text>
+<text matrix="1 0 0 1 -4 8" transformations="translations" pos="192 704" stroke="black" type="label" width="8.964" height="4.294" depth="1.49" valign="baseline" style="math">r_{1}</text>
+<text matrix="1 0 0 1 -8 8" transformations="translations" pos="256 704" stroke="black" type="label" width="8.964" height="4.294" depth="1.49" valign="baseline" style="math">r_{2}</text>
+<path stroke="red" arrow="normal/normal" rarrow="normal/normal">
+192 688 m
+128 688 l
 </path>
-<path stroke="black" pen="fat">
-192 432 m
-160 464 l
+<text matrix="1 0 0 1 -6.55906 4" transformations="translations" pos="160 688" stroke="red" type="label" width="12.935" height="4.294" depth="1.49" valign="baseline" style="math">r_{01}</text>
+<path stroke="red" arrow="normal/normal" rarrow="normal/normal">
+192 688 m
+256 688 l
 </path>
-<path stroke="black" pen="fat">
-128 464 m
-160 464 l
+<text matrix="1 0 0 1 -0.96063 3.19948" transformations="translations" pos="220 688" stroke="red" type="label" width="12.935" height="4.294" depth="1.49" valign="baseline" style="math">r_{12}</text>
+<use name="mark/fdisk(sfx)" pos="192 704" size="normal" stroke="black"/>
+<path stroke="black">
+120 712 m
+128 704 l
 </path>
-<path stroke="black" pen="fat">
-224 464 m
-256 464 l
+<path stroke="black">
+120 704 m
+128 696 l
 </path>
-<path stroke="black" pen="fat">
-128 512 m
-128 416 l
+<path stroke="black">
+120 696 m
+128 688 l
 </path>
-<path stroke="black" pen="fat">
-128 512 m
-112 496 l
+<path stroke="black">
+128 712 m
+128 688 l
 </path>
-<path stroke="black" pen="fat">
-128 496 m
-112 480 l
+<use name="mark/fdisk(sfx)" pos="128 704" size="normal" stroke="black" fill="white"/>
+<path stroke="black">
+256 712 m
+256 688 l
 </path>
-<path stroke="black" pen="fat">
-128 480 m
-112 464 l
+<path stroke="black">
+256 696 m
+264 704 l
 </path>
-<path stroke="black" pen="fat">
-128 464 m
-112 448 l
+<path stroke="black">
+256 688 m
+264 696 l
 </path>
-<path stroke="black" pen="fat">
-128 448 m
-112 432 l
+<path stroke="black">
+256 704 m
+264 712 l
 </path>
-<path stroke="black" pen="fat">
-128 432 m
-112 416 l
-</path>
-<text matrix="1 0 0 1 -18.9154 100.522" transformations="translations" pos="170.328 368.331" stroke="purple" type="label" width="9.513" height="3.21" depth="0" valign="baseline" size="tiny">sa0</text>
-<text matrix="1 0 0 1 -18.6451 87.5513" transformations="translations" pos="170.328 368.331" stroke="purple" type="label" width="9.513" height="3.21" depth="0" valign="baseline" size="tiny">sa1</text>
-<text matrix="1 0 0 1 -3.24264 -4.0533" transformations="translations" pos="168.437 466.421" stroke="purple" type="label" width="9.513" height="3.21" depth="0" valign="baseline" size="tiny">sa2</text>
-<text matrix="1 0 0 1 -7.83638 -6.21506" transformations="translations" pos="195.189 443.452" stroke="purple" type="label" width="9.513" height="3.21" depth="0" valign="baseline" size="tiny">sa3</text>
-<text matrix="1 0 0 1 7.02572 16.7536" transformations="translations" pos="202.214 445.614" stroke="purple" type="label" width="9.513" height="3.21" depth="0" valign="baseline" size="tiny">sa4</text>
-<text matrix="1 0 0 1 -14.3217 40.8032" transformations="translations" pos="201.674 445.344" stroke="purple" type="label" width="9.513" height="3.21" depth="0" valign="baseline" size="tiny">sa5</text>
-<text matrix="1 0 0 1 -3.78308 -6.21506" transformations="translations" pos="230.317 473.176" stroke="purple" type="label" width="9.513" height="3.21" depth="0" valign="baseline" size="tiny">sa6</text>
-<text matrix="1 0 0 1 -0.27022 6.7555" transformations="translations" pos="226.804 449.937" stroke="purple" type="label" width="9.513" height="3.21" depth="0" valign="baseline" size="tiny">sa7</text>
-<use name="mark/fdisk(sfx)" pos="128 464" size="large" stroke="black" fill="white"/>
-<use name="mark/fdisk(sfx)" pos="160 464" size="large" stroke="black" fill="white"/>
-<use name="mark/fdisk(sfx)" pos="192 496" size="large" stroke="black" fill="white"/>
-<use name="mark/fdisk(sfx)" pos="192 432" size="large" stroke="black" fill="white"/>
-<use name="mark/fdisk(sfx)" pos="224 464" size="large" stroke="black" fill="white"/>
-<use name="mark/fdisk(sfx)" pos="256 464" size="large" stroke="black" fill="white"/>
-<text matrix="1 0 0 1 -5.76115 0.800525" transformations="translations" pos="144 464" stroke="blue" type="label" width="9.859" height="3.459" depth="0" valign="baseline" size="tiny">sb0</text>
-<text matrix="1 0 0 1 -10.8871 -3.84252" transformations="translations" pos="176 448" stroke="blue" type="label" width="9.859" height="3.459" depth="0" valign="baseline" size="tiny">sb2</text>
-<text matrix="1 0 0 1 -13.9291 0.96063" transformations="translations" pos="180 480" stroke="blue" type="label" width="9.859" height="3.459" depth="0" valign="baseline" size="tiny">sb1</text>
-<text matrix="1 0 0 1 2.08136 -4.16273" transformations="translations" pos="208 448" stroke="blue" type="label" width="9.859" height="3.459" depth="0" valign="baseline" size="tiny">sb4</text>
-<text transformations="translations" pos="208 480" stroke="blue" type="label" width="9.859" height="3.459" depth="0" valign="baseline" size="tiny">sb3</text>
-<text matrix="1 0 0 1 -0.623997 0.831996" transformations="translations" pos="240 464" stroke="blue" type="label" width="9.859" height="3.459" depth="0" valign="baseline" size="tiny">sb5</text>
+<use name="mark/fdisk(sfx)" pos="256 704" size="normal" stroke="black" fill="white"/>
 </page>
 </ipe>
