@@ -12,7 +12,7 @@ import numpy as np
 r_orig_ic = np.array([[0, 2], [1, 2], [2, 2], [3, 2], [0.5, 1], [1.5, 1], [2.5, 1], [0, 0], [1, 0], [2, 0], [3, 0]],
                      dtype=float)  # shape=(nb_positions, 2)
 posDisplaced = np.array(3)
-dimDisplaced = 0
+dimDisplaced = 1
 distanceDisplaced = 1
 diff = np.zeros_like(r_orig_ic)
 diff[posDisplaced, dimDisplaced] += distanceDisplaced
