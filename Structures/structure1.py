@@ -17,13 +17,13 @@ j_p = np.array([1, 2, 3, 4, 3, 5, 4])
 
 posDisplaced = 5
 dimDisplaced = 0
-distanceDisplaced = 0.8
+distanceDisplaced = 0.5
 diff = np.zeros_like(r_orig_ic)
 diff[posDisplaced, dimDisplaced] += distanceDisplaced
 r_stressed_ic = r_orig_ic + diff
 # # print(r_stressed_ic)
 # angles
-i_t = np.array([0, 2, 4, 3, 1, 4, 2, 5])  # containing first end point
-j_t = np.array([1, 1, 1, 2, 4, 3, 3, 3])  # containing angle points2
-k_t = np.array([2, 4, 0, 1, 3, 2, 5, 4])  # containing second end point
+i_t = np.array([0, 2, 4, 4, 3, 1, 2, 4, 2, 5])  # containing first end point
+j_t = np.array([1, 1, 1, 2, 2, 4, 4, 3, 3, 3])  # containing angle points2
+k_t = np.array([2, 4, 0, 1, 4, 2, 3, 2, 5, 4])  # containing second end point
 
