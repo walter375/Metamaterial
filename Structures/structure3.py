@@ -15,7 +15,11 @@ posDisplaced = np.array(3)
 dimDisplaced = 1
 distanceDisplaced = 1
 diff = np.zeros_like(r_orig_ic)
-diff[posDisplaced, dimDisplaced] += distanceDisplaced
+if dimDisplaced==2:
+    diff[posDisplaced,0] += distanceDisplaced
+    diff[posDisplaced,1] += distanceDisplaced
+else:
+    diff[posDisplaced, dimDisplaced] += distanceDisplaced
 r_stressed_ic = r_orig_ic + diff
 # # pairs
 i_p = np.array([0, 1, 2, 0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6, 7, 8, 9])

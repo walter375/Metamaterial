@@ -12,11 +12,15 @@ import numpy as np
 r_orig_ic = np.array(
     [[0, 1], [1, 1], [2.5, 1], [4, 1], [5, 1], [1.65, 0.5], [1.85, 0.5], [3.15, 0.5], [3.35, 0.5], [0, 0], [1, 0], [2.5, 0],
      [4, 0], [5, 0]], dtype=float)  # shape=(nb_positions, 2)
-posDisplaced = np.array((4,13))
-dimDisplaced = 0
-distanceDisplaced =1.0
+posDisplaced = np.array((4))
+dimDisplaced = 1
+distanceDisplaced =0.5
 diff = np.zeros_like(r_orig_ic)
-diff[posDisplaced, dimDisplaced] += distanceDisplaced
+if dimDisplaced==2:
+    diff[posDisplaced,0] += distanceDisplaced
+    diff[posDisplaced,1] += distanceDisplaced
+else:
+    diff[posDisplaced, dimDisplaced] += distanceDisplaced
 r_stressed_ic = r_orig_ic + diff
 # pairs
 i_p = np.array([0, 1, 2, 3, 1, 2, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12])

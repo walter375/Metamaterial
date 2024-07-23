@@ -17,7 +17,7 @@ j_p = np.array([1, 2, 3, 4, 3, 5, 4])
 
 posDisplaced = 5
 dimDisplaced = 0
-distanceDisplaced = 0.5
+distanceDisplaced = 1
 diff = np.zeros_like(r_orig_ic)
 diff[posDisplaced, dimDisplaced] += distanceDisplaced
 r_stressed_ic = r_orig_ic + diff
