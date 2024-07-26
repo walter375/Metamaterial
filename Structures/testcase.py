@@ -10,7 +10,7 @@ i_p = np.array([0,1,2])
 j_p = np.array([1,2,3])
 
 posDisplaced = 3
-dimDisplaced = 0
+dimDisplaced = 2
 distanceDisplaced = 1
 diff = np.zeros_like(r_orig_ic)
 if dimDisplaced == 0:
